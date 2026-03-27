@@ -226,25 +226,6 @@ def parse_config(file: str) -> dict[str, int | bool | tuple[int, int] | str | No
     }
 
 
-BOX = {
-    "NS":   "\u2551",
-    "EW":   "\u2550",
-    "NE":   "\u255a",
-    "NW":   "\u255d",
-    "SE":   "\u2554",
-    "SW":   "\u2557",
-    "NSE":  "\u2560",
-    "NSW":  "\u2563",
-    "NEW":  "\u2569",
-    "SEW":  "\u2566",
-    "NSEW": "\u256c",
-    "N":    "\u2568",
-    "S":    "\u2565",
-    "E":    "\u255e",
-    "W":    "\u2561",
-    "":     "\u00b7",
-}
-
 
 motion_color = "\033[5m"
 YLW_color = '\033[93m'
@@ -274,9 +255,8 @@ def grid_print(grid: list[list[str]], width: int, height: int) -> None:
 def print_maze(maze: list[list[dict[str, bool]]], width: int, height: int, entry: tuple[int, int], exit_pos: tuple[int, int]) -> list[list[str]]:
     rows = height * 2 + 1
     cols = width * 2 + 1
-    arr: list[str] = ['13', '37']
     grid: list[list[str]] = [
-        ['42' + end_color] * (cols) for x in range(rows)]
+        [YLW_color + '██' + end_color] * (cols) for _ in range(rows)]
     for row in range(height):
         for col in range(width):
             cell = maze[row][col]
@@ -438,6 +418,20 @@ def wall_path_colors() -> tuple[str, str]:
 
 
 def main() -> None:
+    config = parse_config("config.txt")
+    gen = MazeGenerator(
+        width=config['width'],
+        height=config['height'],
+        entry=config['entry'],
+        exit=config['exit'],
+        output_file=config['output_file'],
+        perfect=config['perfect'],
+        seed=config['seed']
+    )
+    gen.generate()
+
+    print(gen.solution())
+    return
     welcom()
     while True:
         path: bool = False
@@ -461,6 +455,7 @@ def main() -> None:
                 config['entry'],
                 config['exit']
             )
+            print(gen.solution())
             while True:
                 char = get_char()
                 if char in ['R', 'r']:

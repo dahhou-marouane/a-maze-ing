@@ -213,36 +213,137 @@
 # ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝     ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝🟥
                                                                                                                                             
 # """ + end_color)
-def welcom() -> None:
-   motion = "\033[5m"
-   welcom_color: str = "\033[93m"
-   end_color: str = "\033[0m"
-   welcom_messg: list[str] = [
-        " "* 24 + "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗███████╗",
-        " "* 24 + "██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝",
-        " "* 24 + "██║ █╗ ██║█████╗  ██║     ██║     ██║   ██║██╔████╔██║█████╗",
-        " "* 24 + "██║███╗██║██╔══╝  ██║     ██║     ██║   ██║██║╚██╔╝██║██╔══╝",
-        " "* 24 + "╚███╔███╔╝███████╗███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗",
-        " "* 24 + " ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝",
-        "\n",
-        " " * 48 + "████████╗ ██████╗",
-        " " * 48 + "╚══██╔══╝██╔═══██╗",
-        " " * 48 + "   ██║   ██║   ██║",
-        " " * 48 + "   ██║   ██║   ██║",
-        " " * 48 + "   ██║   ╚██████╔╝",
-        " " * 48 + "   ╚═╝    ╚═════╝",
-        "\n",
-        "███╗   ███╗ █████╗ ███████╗███████╗     ██████╗ ███████╗███╗   ██╗███████╗██████╗  █████╗ ████████╗ ██████╗ ██████╗",
-        "████╗ ████║██╔══██╗╚══███╔╝██╔════╝    ██╔════╝ ██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗",
-        "██╔████╔██║███████║  ███╔╝ █████╗      ██║  ███╗█████╗  ██╔██╗ ██║█████╗  ██████╔╝███████║   ██║   ██║   ██║██████╔╝",
-        "██║╚██╔╝██║██╔══██║ ███╔╝  ██╔══╝      ██║   ██║██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗██╔══██║   ██║   ██║   ██║██╔══██╗",
-        "██║ ╚═╝ ██║██║  ██║███████╗███████╗    ╚██████╔╝███████╗██║ ╚████║███████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║",
-        "╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝     ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝"
-   ]
-   import os
-   os.system("clear")
-   cols, _ = os.get_terminal_size()
-   padding: int = (cols - 116) // 2
-   for _ in welcom_messg:
-        print(" " * padding + _)
-welcom()
+# def welcom() -> None:
+#    motion = "\033[5m"
+#    welcom_color: str = "\033[93m"
+#    end_color: str = "\033[0m"
+#    welcom_messg: list[str] = [
+#         " "* 24 + "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗███████╗",
+#         " "* 24 + "██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝",
+#         " "* 24 + "██║ █╗ ██║█████╗  ██║     ██║     ██║   ██║██╔████╔██║█████╗",
+#         " "* 24 + "██║███╗██║██╔══╝  ██║     ██║     ██║   ██║██║╚██╔╝██║██╔══╝",
+#         " "* 24 + "╚███╔███╔╝███████╗███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗",
+#         " "* 24 + " ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝",
+#         "\n",
+#         " " * 48 + "████████╗ ██████╗",
+#         " " * 48 + "╚══██╔══╝██╔═══██╗",
+#         " " * 48 + "   ██║   ██║   ██║",
+#         " " * 48 + "   ██║   ██║   ██║",
+#         " " * 48 + "   ██║   ╚██████╔╝",
+#         " " * 48 + "   ╚═╝    ╚═════╝",
+#         "\n",
+#         "███╗   ███╗ █████╗ ███████╗███████╗     ██████╗ ███████╗███╗   ██╗███████╗██████╗  █████╗ ████████╗ ██████╗ ██████╗",
+#         "████╗ ████║██╔══██╗╚══███╔╝██╔════╝    ██╔════╝ ██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗",
+#         "██╔████╔██║███████║  ███╔╝ █████╗      ██║  ███╗█████╗  ██╔██╗ ██║█████╗  ██████╔╝███████║   ██║   ██║   ██║██████╔╝",
+#         "██║╚██╔╝██║██╔══██║ ███╔╝  ██╔══╝      ██║   ██║██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗██╔══██║   ██║   ██║   ██║██╔══██╗",
+#         "██║ ╚═╝ ██║██║  ██║███████╗███████╗    ╚██████╔╝███████╗██║ ╚████║███████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║",
+#         "╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝     ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝"
+#    ]
+#    import os
+#    os.system("clear")
+#    cols, _ = os.get_terminal_size()
+#    padding: int = (cols - 116) // 2
+#    for _ in welcom_messg:
+# #         print(" " * padding + _)
+# # welcom()
+
+
+# colors: dict[str, str] = {
+#         'YLW': "\033[93m",
+#         'GRN': '\033[92m',
+#         'RED': '\033[91m',
+#         'WHITE': '\033[1m',
+#         'REDDARK': '\033[31m'
+#     }
+# walls = colors['RED']
+# print(walls + "kk")
+# print(walls + "█")
+# print("Selected walls color is ", walls + "█")
+# import random
+# print(list(colors))
+import os
+import sys
+import termios
+import tty
+import random
+
+
+def get_char():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+
+    try:
+        tty.setraw(fd)
+        return sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def wall_path_colors() -> tuple[str, str]:
+    colors: dict[str, str] = {
+        'YLW': "\033[93m",
+        'GRN': '\033[92m',
+        'RED': '\033[91m',
+        'WHITE': '\033[1m',
+        'REDDARK': '\033[31m',
+        'RESET': '\033[0m'
+    }
+
+    def _middel_print(message: str) -> None:
+        RESET: str = '\033[0m'
+        cols, _ = os.get_terminal_size()
+        spaces: int = (cols - 116) // 2
+        # new_lines: int = ((rows - 20) // 2) - 6
+        # print("\n" * new_lines)
+        print(((" " * 20) + " " * spaces) +
+              message + RESET)
+    path: str = ""
+    walls: str = ""
+    _middel_print("whish color would u like for the walls:")
+    _middel_print("    1 - RED")
+    _middel_print("    2 - GREEN")
+    _middel_print("    3 - YELLOW")
+    _middel_print("    4 - WHITE")
+    _middel_print("    5 - RANDOM")
+    while True:
+        # os.system("clear")
+        char = get_char()
+        if char in ['Q', 'q']:
+            exit(0)
+        elif char in ['1', '2', '3', '4', '5']:
+            if char == '1':
+                walls = colors['RED']
+            elif char == '2':
+                walls = colors['GRN']
+            elif char == '3':
+                walls = colors['YLW']
+            elif char == '4':
+                walls = colors['WHITE']
+            elif char == '5':
+                tmp: str = random.choice(list(colors))
+                walls = colors[tmp]
+            break
+    _middel_print("Selected walls color is " + walls + "██")
+    _middel_print("whish color would u like for the path:"
+                  "1 - RED\n2 - GREEN\n3 - YELLOW\n4 - WHITE\n5 - RANDOM\n")
+    while True:
+        char = get_char()
+        if char in ['Q', 'q']:
+            exit(0)
+        elif char in ['1', '2', '3', '4', '5']:
+            if char == '1':
+                path = colors['RED']
+            elif char == '2':
+                path = colors['GRN']
+            elif char == '3':
+                path = colors['YLW']
+            elif char == '4':
+                path = colors['WHITE']
+            elif char == '5':
+                tmp: str = random.choice(list(colors))
+                path = colors[tmp]
+            break
+    _middel_print("Selected walls color is " + path + "██")
+    return (walls, path)
+
+wall_path_colors()
