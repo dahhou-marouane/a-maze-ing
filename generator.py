@@ -252,9 +252,9 @@ GRN_color = '\033[92m'
 RED_color = '\033[91m'
 REDDARK_color = '\033[31m'
 RST_color = '\033[0m'
-entry_color: str = "\033[92m"
-exit_color: str = "\033[91m"
-path_color: str = "\033[95m"
+entry_color: str = "\033[102m"
+exit_color: str = "\033[101m"
+
 end_color: str = "\033[0m"
 
 
@@ -271,12 +271,11 @@ def grid_print(grid: list[list[str]], width: int, height: int) -> None:
         print()
 
 
-def print_maze(maze: list[list[dict[str, bool]]], width: int, height: int, entry: tuple[int, int], exit_pos: tuple[int, int]) -> list[list[str]]:
+def print_maze(maze: list[list[dict[str, bool]]], width: int, height: int, entry: tuple[int, int], exit_pos: tuple[int, int], walls_color: str, wall_char: str = "██") -> list[list[str]]:
     rows = height * 2 + 1
     cols = width * 2 + 1
-    arr: list[str] = ['13', '37']
     grid: list[list[str]] = [
-        ['42' + end_color] * (cols) for x in range(rows)]
+        [walls_color + wall_char + end_color] * (cols) for _ in range(rows)]
     for row in range(height):
         for col in range(width):
             cell = maze[row][col]
@@ -284,9 +283,9 @@ def print_maze(maze: list[list[dict[str, bool]]], width: int, height: int, entry
             cc: int = col * 2 + 1
             grid[cr][cc] = '  '
             if cr == entry[1] * 2 + 1 and cc == entry[0] * 2 + 1:
-                grid[cr][cc] = entry_color + '██' + end_color
+                grid[cr][cc] = entry_color + 'EN' + end_color
             elif cr == exit_pos[1] * 2 + 1 and cc == exit_pos[0] * 2 + 1:
-                grid[cr][cc] = exit_color + '██' + end_color
+                grid[cr][cc] = exit_color + 'EX' + end_color
             if not cell['N']:
                 grid[cr - 1][cc] = '  '
             if not cell['S']:
@@ -296,33 +295,35 @@ def print_maze(maze: list[list[dict[str, bool]]], width: int, height: int, entry
             if not cell['W']:
                 grid[cr][cc - 1] = '  '
     grid_print(grid, width, height)
+    maze_controle()
     return grid
 
 
-def print_path(solution: str | None, entry: tuple[int, int], grid: list[list[str]], width: int, height: int) -> None:
+def print_path(solution: str | None, entry: tuple[int, int], grid: list[list[str]], width: int, height: int, path_color: str, path_char: str = "▓▓") -> None:
     if solution:
         cr: int = entry[1] * 2 + 1
         cc: int = entry[0] * 2 + 1
         for move in solution:
-            grid[cr][cc] = path_color + '▓▓' + end_color
+            grid[cr][cc] = path_color + path_char + end_color
             if cr == entry[1] * 2 + 1 and cc == entry[0] * 2 + 1:
-                grid[cr][cc] = entry_color + '██' + end_color
+                grid[cr][cc] = entry_color + 'EN' + end_color
             if move == 'N':
-                grid[cr - 1][cc] = path_color + '▓▓' + end_color
+                grid[cr - 1][cc] = path_color + path_char + end_color
                 cr -= 2
             elif move == 'S':
-                grid[cr + 1][cc] = path_color + '▓▓' + end_color
+                grid[cr + 1][cc] = path_color + path_char + end_color
                 cr += 2
             elif move == 'E':
-                grid[cr][cc + 1] = path_color + '▓▓' + end_color
+                grid[cr][cc + 1] = path_color + path_char + end_color
                 cc += 2
             elif move == 'W':
-                grid[cr][cc - 1] = path_color + '▓▓' + end_color
+                grid[cr][cc - 1] = path_color + path_char + end_color
                 cc -= 2
             else:
                 print("Error: Invalid path")
                 exit(1)
     grid_print(grid, width, height)
+    maze_controle()
 
 
 def welcom() -> None:
@@ -368,81 +369,109 @@ def welcom() -> None:
     for _ in welcom_messg:
         print(REDDARK_color + motion_color + " " * spaces + _ + RST_color)
     print(GRN_color + motion_color + ((" " * 46) + " " * spaces) +
-          "Press 'G' to generate!!" + RST_color)
+          "Press 'S' to START!!" + RST_color)
+
+def maze_controle() -> None:
+    cols, _ = os.get_terminal_size()
+    spaces: int = (cols - 116) // 2
+    print("\n" * 3)
+    print(((" " * 30) + " " * spaces) + "PRESS : "'\033[31m' + "(Q,q) to QUIT " + '\033[0m' + "; (R,r) to regenerate ; (P,p) to Show PATH")
 
 
 def wall_path_colors() -> tuple[str, str]:
     colors: dict[str, str] = {
-        'YLW': "\033[93m",
+        'WHITE': '\033[0m',
+        'RED': '\033[31m',
+        'ORANGE': '\033[91m',
         'GRN': '\033[92m',
-        'RED': '\033[91m',
-        'WHITE': '\033[1m',
-        'REDDARK': '\033[31m',
-        'RESET': '\033[0m'
+        'YLW': '\033[93m',
+        'BLUE': '\033[94m',
+        'PURPLE': '\033[95m',
+        'SKYBLUE': '\033[96m',
     }
+
+    def _get_key() -> str:
+        chosen: str = ""
+        while True:
+            char = get_char()
+            if char in ['Q', 'q']:
+                exit(0)
+            elif char in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
+                if char == '1':
+                    chosen = colors['WHITE']
+                elif char == '2':
+                    chosen = colors['RED']
+                elif char == '3':
+                    chosen = colors['ORANGE']
+                elif char == '4':
+                    chosen = colors['GRN']
+                elif char == '5':
+                    chosen = colors['YLW']
+                elif char == '6':
+                    chosen = colors['BLUE']
+                elif char == '7':
+                    chosen = colors['PURPLE']
+                elif char == '8':
+                    chosen = colors['SKYBLUE']
+                elif char == '9':
+                    tmp: str = random.choice(list(colors))
+                    chosen = colors[tmp]
+                break
+        return chosen
 
     def _middel_print(message: str) -> None:
         RESET: str = '\033[0m'
         cols, _ = os.get_terminal_size()
         spaces: int = (cols - 116) // 2
-        # new_lines: int = ((rows - 20) // 2) - 6
-        # print("\n" * new_lines)
-        print(((" " * 20) + " " * spaces) +
+        print(((" " * 40) + " " * spaces) +
               message + RESET)
+
+    def _choose_color() -> None:
+        k = 1
+        for i in colors:
+            _middel_print(" " * 5 + colors[i] + f"{k} - " + i)
+            k += 1
+        _middel_print(" " * 5 + colors['ORANGE'] + "9 - " +
+                    colors['WHITE'] +
+                    colors['RED'] + "R" +
+                    colors['ORANGE'] + "A" +
+                    colors['GRN'] + "N" + 
+                    colors['YLW'] + "D" +
+                    colors['BLUE'] + "O" +
+                    colors['PURPLE'] + "M")
+
     path: str = ""
     walls: str = ""
-    _middel_print("whish color would u like for the walls\n"
-                  "1 - RED\n2 - GREEN\n3 - YELLOW\n4 - WHITE\n5 - RANDOM\n")
-    print("whish color would u like for the walls\n"
-          "1 - RED\n2 - GREEN\n3 - YELLOW\n4 - WHITE\n5 - RANDOM\n")
-    while True:
-        # os.system("clear")
-        char = get_char()
-        if char in ['Q', 'q']:
-            exit(0)
-        elif char in ['1', '2', '3', '4', '5']:
-            if char == '1':
-                walls = colors['RED']
-            elif char == '2':
-                walls = colors['GRN']
-            elif char == '3':
-                walls = colors['YLW']
-            elif char == '4':
-                walls = colors['WHITE']
-            elif char == '5':
-                tmp: str = random.choice(list(colors))
-                walls = colors[tmp]
-            break
-    _middel_print("Selected walls color is " + walls + "██")
-    _middel_print("whish color would u like for the path\n"
-                  "1 - RED\n2 - GREEN\n3 - YELLOW\n4 - WHITE\n5 - RANDOM\n")
-    while True:
-        char = get_char()
-        if char in ['Q', 'q']:
-            exit(0)
-        elif char in ['1', '2', '3', '4', '5']:
-            if char == '1':
-                path = colors['RED']
-            elif char == '2':
-                path = colors['GRN']
-            elif char == '3':
-                path = colors['YLW']
-            elif char == '4':
-                path = colors['WHITE']
-            elif char == '5':
-                tmp: str = random.choice(list(colors))
-                path = colors[tmp]
-            break
-    _middel_print("Selected walls color is " + path + "██")
+    _middel_print("whish color would u like for the walls:")
+    _choose_color()
+    walls = _get_key()
+    _middel_print("Selected walls color is " + walls + "██\n")
+    _middel_print("whish color would u like for the path:")
+    _choose_color()
+    path = _get_key()
+    _middel_print("Selected path color is " + path + "██\n")
+    time.sleep(1)
     return (walls, path)
 
 
 def main() -> None:
+    colorado: list[str] = ['\033[0m','\033[31m','\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m', '\033[96m']
+    emoji: list[str] = [ '██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥', '🐭', '🐾', '🌟', '🍬', '💎', '🔮', '🫧', '🍪', '👣', '▓▓', '42', '@@']
+
+    w: int = -1
+    wc: int = -1
+    p: int = -1
+    pc: int = -1
+    wall_char: str = ""
+    path_char: str = ""
+    wall_color: str = ""
+    path_color: str = ""
     welcom()
     while True:
         path: bool = False
         char: str = get_char()
-        if char in ['G', 'g']:
+        if char in ['S', 's']:
+            os.system("clear")
             config = parse_config("config.txt")
             gen = MazeGenerator(
                 width=config['width'],
@@ -454,12 +483,16 @@ def main() -> None:
                 seed=config['seed']
             )
             gen.generate()
+            wc += 1
+            wall_char = emoji[wc % len(emoji)]
             grid = print_maze(
-                gen.maze(),
-                config['width'],
-                config['height'],
-                config['entry'],
-                config['exit']
+                wall_char=wall_char,
+                walls_color=wall_color,
+                maze=gen.maze(),
+                width=config['width'],
+                height=config['height'],
+                entry=config['entry'],
+                exit_pos=config['exit']
             )
             while True:
                 char = get_char()
@@ -475,33 +508,77 @@ def main() -> None:
                         seed=config['seed']
                     )
                     gen.generate()
+                    wc += 1
+                    wall_char = emoji[wc % len(emoji)]
                     grid = print_maze(
-                        gen.maze(),
-                        config['width'],
-                        config['height'],
-                        config['entry'],
-                        config['exit']
+                        wall_char=wall_char,
+                        walls_color=wall_color,
+                        maze=gen.maze(),
+                        width=config['width'],
+                        height=config['height'],
+                        entry=config['entry'],
+                        exit_pos=config['exit']
                     )
                     path = False
                 elif char in ['P', 'p']:
                     if not path:
+                        pc += 1
+                        path_char = emoji[pc % len(emoji)]
                         print_path(
-                            gen.solution(),
-                            config['entry'],
-                            grid,
-                            config['width'],
-                            config['height']
+                            path_char=path_char,
+                            path_color=path_color,
+                            solution=gen.solution(),
+                            entry=config['entry'],
+                            grid=grid,
+                            width=config['width'],
+                            height=config['height']
                         )
                         path = True
                     else:
                         grid = print_maze(
-                            gen.maze(),
-                            config['width'],
-                            config['height'],
-                            config['entry'],
-                            config['exit']
+
+                            walls_color=wall_color,
+                            maze=gen.maze(),
+                            width=config['width'],
+                            height=config['height'],
+                            entry=config['entry'],
+                            exit_pos=config['exit']
                         )
                         path = False
+                elif char == '1':
+                    w += 1
+                    wall_color = colorado[(w + 1) % len(colorado)]
+                    grid = print_maze(
+                            walls_color=wall_color,
+                            maze=gen.maze(),
+                            width=config['width'],
+                            height=config['height'],
+                            entry=config['entry'],
+                            exit_pos=config['exit']
+                        )
+                    if path:
+                        print_path(
+                                path_color=path_color,
+                                solution=gen.solution(),
+                                entry=config['entry'],
+                                grid=grid,
+                                width=config['width'],
+                                height=config['height']
+                            )
+                elif char == '2':
+                    p += 1
+                    path_color = colorado[(p + 1) % len(colorado)]
+                    if path:
+                        print_path(
+                                path_color=path_color,
+                                solution=gen.solution(),
+                                entry=config['entry'],
+                                grid=grid,
+                                width=config['width'],
+                                height=config['height']
+                            )
+                # elif char == '3':
+
                 elif char in ['Q', 'q']:
                     exit(0)
         elif char in ['Q', 'q']:
