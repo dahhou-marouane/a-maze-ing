@@ -226,26 +226,6 @@ def parse_config(file: str) -> dict[str, int | bool | tuple[int, int] | str | No
     }
 
 
-BOX = {
-    "NS":   "\u2551",
-    "EW":   "\u2550",
-    "NE":   "\u255a",
-    "NW":   "\u255d",
-    "SE":   "\u2554",
-    "SW":   "\u2557",
-    "NSE":  "\u2560",
-    "NSW":  "\u2563",
-    "NEW":  "\u2569",
-    "SEW":  "\u2566",
-    "NSEW": "\u256c",
-    "N":    "\u2568",
-    "S":    "\u2565",
-    "E":    "\u255e",
-    "W":    "\u2561",
-    "":     "\u00b7",
-}
-
-
 motion_color = "\033[5m"
 YLW_color = '\033[93m'
 GRN_color = '\033[92m'
@@ -327,7 +307,7 @@ def print_path(solution: str | None, entry: tuple[int, int], grid: list[list[str
 
 
 def welcom() -> None:
-    welcom_messg: list[str] = [
+    welcom_msg: list[str] = [
         " " * 24 + "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗██" +
         "█████╗",
         " " * 24 + "██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██" +
@@ -366,20 +346,66 @@ def welcom() -> None:
     spaces: int = (cols - 116) // 2
     new_lines: int = (rows - 20) // 2
     print("\n" * new_lines)
-    for _ in welcom_messg:
-        print(REDDARK_color + motion_color + " " * spaces + _ + RST_color)
-    print(GRN_color + motion_color + ((" " * 46) + " " * spaces) +
-          "Press 'S' to START!!" + RST_color)
+    for msg in welcom_msg:
+        print('\033[31m' + '\033[5m' + " " * spaces + msg + '\033[0m')
+    print('\033[92m' + '\033[5m' + ((" " * 46) + " " * spaces) +
+          "Press 'S' to START!!" + '\033[0m')
+
+
+def good_bye() -> None:
+    good_msg: list[str] = [
+        " ██████╗  ██████╗  ██████╗ ██████╗",
+        "██╔════╝ ██╔═══██╗██╔═══██╗██╔══██╗",
+        "██║  ███╗██║   ██║██║   ██║██║  ██║",
+        "██║   ██║██║   ██║██║   ██║██║  ██║",
+        "╚██████╔╝╚██████╔╝╚██████╔╝██████╔╝",
+        " ╚═════╝  ╚═════╝  ╚═════╝ ╚═════╝ ",
+        " " * 5 + "██████╗ ██╗   ██╗███████╗",
+        " " * 5 + "██╔══██╗╚██╗ ██╔╝██╔════╝",
+        " " * 5 + "██████╔╝ ╚████╔╝ █████╗  ",
+        " " * 5 + "██╔══██╗  ╚██╔╝  ██╔══╝  ",
+        " " * 5 + "██████╔╝   ██║   ███████╗",
+        " " * 5 + "╚═════╝    ╚═╝   ╚══════╝"
+    ]
+    try:
+        os.system("clear")
+        cols, rows = os.get_terminal_size()
+        spaces: int = (cols - 34) // 2
+        print("\n" * rows)
+        for msg in good_msg:
+            print('\033[31m' + " " * spaces + msg + '\033[0m')
+        for _ in range(rows):
+            print()
+            time.sleep(0.04)
+        os.system("clear")
+    except KeyboardInterrupt:
+        os.system("clear")
+
+
+def exit_code() -> None:
+    good_bye()
+    exit(0)
+
+
+def middel_print(message: str) -> None:
+    cols, _ = os.get_terminal_size()
+    spaces: int = (cols - len(message)) // 2
+    print((" " * spaces) +
+          message + '\033[0m')
+
 
 def maze_controle() -> None:
-    cols, _ = os.get_terminal_size()
-    spaces: int = (cols - 116) // 2
     print("\n" * 3)
-    print(((" " * 30) + " " * spaces) + "PRESS : "'\033[31m' + "(Q,q) to QUIT " + '\033[0m' + "; (R,r) to regenerate ; (P,p) to Show PATH")
+    middel_print("PRESS: " +
+                 '\033[31m' + "(Q,q) to QUIT" + '\033[0m' +
+                 " ; (R,r) to REGENERATE ; (P,p) to Show PATH;")
+    middel_print("(1) to change walls COLORS    ;")
+    middel_print("(2) to change path COLORS     ;")
+    middel_print("(3) to change walls CHARACTERS;")
+    middel_print("(4) to change path CHARACTERS  ")
 
 
-def wall_path_colors() -> tuple[str, str]:
-    colors: dict[str, str] = {
+colors: dict[str, str] = {
         'WHITE': '\033[0m',
         'RED': '\033[31m',
         'ORANGE': '\033[91m',
@@ -390,82 +416,51 @@ def wall_path_colors() -> tuple[str, str]:
         'SKYBLUE': '\033[96m',
     }
 
-    def _get_key() -> str:
-        chosen: str = ""
-        while True:
-            char = get_char()
-            if char in ['Q', 'q']:
-                exit(0)
-            elif char in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
-                if char == '1':
-                    chosen = colors['WHITE']
-                elif char == '2':
-                    chosen = colors['RED']
-                elif char == '3':
-                    chosen = colors['ORANGE']
-                elif char == '4':
-                    chosen = colors['GRN']
-                elif char == '5':
-                    chosen = colors['YLW']
-                elif char == '6':
-                    chosen = colors['BLUE']
-                elif char == '7':
-                    chosen = colors['PURPLE']
-                elif char == '8':
-                    chosen = colors['SKYBLUE']
-                elif char == '9':
-                    tmp: str = random.choice(list(colors))
-                    chosen = colors[tmp]
-                break
-        return chosen
-
-    def _middel_print(message: str) -> None:
-        RESET: str = '\033[0m'
-        cols, _ = os.get_terminal_size()
-        spaces: int = (cols - 116) // 2
-        print(((" " * 40) + " " * spaces) +
-              message + RESET)
-
-    def _choose_color() -> None:
-        k = 1
-        for i in colors:
-            _middel_print(" " * 5 + colors[i] + f"{k} - " + i)
-            k += 1
-        _middel_print(" " * 5 + colors['ORANGE'] + "9 - " +
-                    colors['WHITE'] +
-                    colors['RED'] + "R" +
-                    colors['ORANGE'] + "A" +
-                    colors['GRN'] + "N" + 
-                    colors['YLW'] + "D" +
-                    colors['BLUE'] + "O" +
-                    colors['PURPLE'] + "M")
-
-    path: str = ""
-    walls: str = ""
-    _middel_print("whish color would u like for the walls:")
-    _choose_color()
-    walls = _get_key()
-    _middel_print("Selected walls color is " + walls + "██\n")
-    _middel_print("whish color would u like for the path:")
-    _choose_color()
-    path = _get_key()
-    _middel_print("Selected path color is " + path + "██\n")
-    time.sleep(1)
-    return (walls, path)
+def check_terminal(old_col: int, old_rows: int, new_col: int, new_rows: int) -> None:
+    if (old_col != new_col) or (old_rows != old_col):
 
 
 def main() -> None:
-    colorado: list[str] = ['\033[0m','\033[31m','\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m', '\033[96m']
-    emoji: list[str] = [ '██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥', '🐭', '🐾', '🌟', '🍬', '💎', '🔮', '🫧', '🍪', '👣', '▓▓', '42', '@@']
-
+    colorado: list[str] = ['\033[0m', '\033[31m', '\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m', '\033[96m']
+    emoji: list[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥']
+    emoji2: list[str] = ['▓▓', '🐭', '🐾', '🌟', '🍬', '💎', '🔮', '🫧', '🍪', '👣', '42', '@@']
     w: int = -1
     wc: int = -1
     p: int = -1
     pc: int = -1
-    wall_char: str = ""
-    path_char: str = ""
+    wall_char: str = emoji[0]
+    path_char: str = emoji2[0]
     wall_color: str = ""
     path_color: str = ""
+    old_col: int = 0
+    old_rows: int = 0
+
+
+    def _check_terminal() -> tuple[int, int]:
+        new_col, new_rows = os.get_terminal_size()
+        if (old_col, old_rows) != (new_col, new_rows):
+            if path:
+                print_path(
+                    path_char=path_char,
+                    path_color=path_color,
+                    solution=gen.solution(),
+                    entry=config['entry'],
+                    grid=grid,
+                    width=config['width'],
+                    height=config['height']
+                    )
+            else:
+                print_maze(
+                        wall_char=wall_char,
+                        walls_color=wall_color,
+                        maze=gen.maze(),
+                        width=config['width'],
+                        height=config['height'],
+                        entry=config['entry'],
+                        exit_pos=config['exit']
+                    )
+        return(new_col, new_rows)
+    old_col, old_rows = _check_terminal()
     welcom()
     while True:
         path: bool = False
@@ -483,8 +478,6 @@ def main() -> None:
                 seed=config['seed']
             )
             gen.generate()
-            wc += 1
-            wall_char = emoji[wc % len(emoji)]
             grid = print_maze(
                 wall_char=wall_char,
                 walls_color=wall_color,
@@ -508,8 +501,6 @@ def main() -> None:
                         seed=config['seed']
                     )
                     gen.generate()
-                    wc += 1
-                    wall_char = emoji[wc % len(emoji)]
                     grid = print_maze(
                         wall_char=wall_char,
                         walls_color=wall_color,
@@ -522,8 +513,6 @@ def main() -> None:
                     path = False
                 elif char in ['P', 'p']:
                     if not path:
-                        pc += 1
-                        path_char = emoji[pc % len(emoji)]
                         print_path(
                             path_char=path_char,
                             path_color=path_color,
@@ -536,53 +525,128 @@ def main() -> None:
                         path = True
                     else:
                         grid = print_maze(
-
+                            wall_char=wall_char,
                             walls_color=wall_color,
                             maze=gen.maze(),
                             width=config['width'],
                             height=config['height'],
                             entry=config['entry'],
                             exit_pos=config['exit']
-                        )
+                            )
                         path = False
                 elif char == '1':
                     w += 1
                     wall_color = colorado[(w + 1) % len(colorado)]
                     grid = print_maze(
+                            wall_char=wall_char,
                             walls_color=wall_color,
                             maze=gen.maze(),
                             width=config['width'],
                             height=config['height'],
                             entry=config['entry'],
                             exit_pos=config['exit']
-                        )
+                            )
                     if path:
                         print_path(
+                                path_char=path_char,
                                 path_color=path_color,
                                 solution=gen.solution(),
                                 entry=config['entry'],
                                 grid=grid,
                                 width=config['width'],
                                 height=config['height']
-                            )
+                                )
                 elif char == '2':
                     p += 1
                     path_color = colorado[(p + 1) % len(colorado)]
                     if path:
                         print_path(
+                                path_char=path_char,
                                 path_color=path_color,
                                 solution=gen.solution(),
                                 entry=config['entry'],
                                 grid=grid,
                                 width=config['width'],
                                 height=config['height']
+                                )
+                elif char == '3':
+                    wc += 1
+                    wall_char = emoji[(wc + 1) % len(emoji)]
+                    grid = print_maze(
+                            wall_char=wall_char,
+                            walls_color=wall_color,
+                            maze=gen.maze(),
+                            width=config['width'],
+                            height=config['height'],
+                            entry=config['entry'],
+                            exit_pos=config['exit']
                             )
-                # elif char == '3':
-
+                    if path:
+                        print_path(
+                                path_char=path_char,
+                                path_color=path_color,
+                                solution=gen.solution(),
+                                entry=config['entry'],
+                                grid=grid,
+                                width=config['width'],
+                                height=config['height']
+                                )
+                elif char == '4':
+                    pc += 1
+                    path_char = emoji2[(pc + 1) % len(emoji2)]
+                    if path:
+                        print_path(
+                                path_char=path_char,
+                                path_color=path_color,
+                                solution=gen.solution(),
+                                entry=config['entry'],
+                                grid=grid,
+                                width=config['width'],
+                                height=config['height']
+                                )
                 elif char in ['Q', 'q']:
-                    exit(0)
+                    middel_print("Do u want really to " +
+                                 '\033[31m' + "EXIT" + '\033[0m' +
+                                 ": (Y)es, (N)o"
+                                 )
+                    while True:
+                        char = get_char()
+                        if char in ['Y', 'y']:
+                            exit_code()
+                        elif char in ['N', 'n']:
+                            if path:
+                                print_path(
+                                    path_char=path_char,
+                                    path_color=path_color,
+                                    solution=gen.solution(),
+                                    entry=config['entry'],
+                                    grid=grid,
+                                    width=config['width'],
+                                    height=config['height']
+                                )
+                            else:
+                                grid = print_maze(
+                                    wall_char=wall_char,
+                                    walls_color=wall_color,
+                                    maze=gen.maze(),
+                                    width=config['width'],
+                                    height=config['height'],
+                                    entry=config['entry'],
+                                    exit_pos=config['exit']
+                                    )
+                            break
         elif char in ['Q', 'q']:
-            exit(0)
+            middel_print("Do u want really to " +
+                         '\033[31m' + "EXIT" + '\033[0m' +
+                         ": (Y)es, (N)o"
+                         )
+            while True:
+                char = get_char()
+                if char in ['Y', 'y']:
+                    exit_code()
+                elif char in ['N', 'n']:
+                    welcom()
+                    break
 
 
 def get_char():
