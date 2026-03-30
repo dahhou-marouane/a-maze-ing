@@ -163,11 +163,15 @@ def parse_config(
     """read the config file and validate it and parse it to dict"""
 
     def _check_output_file(file: str) -> str:
+        if not file:
+            print("Error config file: OUTPUT_FILE cannot be ''")
+            exit(1)
         allowed_dir = os.path.dirname(__file__)
         output_path = os.path.realpath(os.path.join(allowed_dir, file))
         if os.path.dirname(output_path) != allowed_dir:
             os.system("clear")
-            print("Error: OUTPUT_FILE must be in the script directory")
+            print("Error config file: OUTPUT_FILE must be in the "
+                  "script directory")
             exit(1)
         return output_path
 
@@ -432,9 +436,9 @@ def main() -> None:
     colorado: List[str] = ['\033[0m', '\033[31m', '\033[91m',
                            '\033[92m', '\033[93m', '\033[94m',
                            '\033[95m', '\033[96m']
-    emoji: List[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥']
+    emoji: List[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🔥']
     emoji2: List[str] = ['▓▓', '🐭', '🐾', '🌟',
-                         '🍬', '💎', '🔮', '🫧', '🍪', '👣', '42', '@@']
+                         '🍬', '💎', '🔮', '🍪', '👣', '42', '@@']
     w: int = -1
     wc: int = -1
     p: int = -1
@@ -471,13 +475,17 @@ def main() -> None:
                     exit_pos=cast(Tuple[int, int], config['exit'])
                 )
         return (new_col, new_rows)
-
+    if len(sys.argv) == 1:
+        print("Error: The program must be run with the following command:\n"
+              "python3 a_maze_ing.py [config_file_here]")
+        exit(1)
+    config_file: str = sys.argv[1]
     welcom()
     while True:
         char: str = get_char()
         if char in ['S', 's']:
             os.system("clear")
-            config = parse_config("config.txt")
+            config = parse_config(config_file)
             gen = MazeGenerator(
                 width=cast(int, config['width']),
                 height=cast(int, config['height']),
@@ -501,7 +509,7 @@ def main() -> None:
                 char = get_char()
                 old_col, old_rows = _check_terminal()
                 if char in ['R', 'r']:
-                    config = parse_config("config.txt")
+                    config = parse_config(config_file)
                     gen = MazeGenerator(
                         width=cast(int, config['width']),
                         height=cast(int, config['height']),
