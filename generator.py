@@ -6,15 +6,17 @@ import time
 import sys
 import random
 from collections import deque
+from typing import cast, List, Dict, Tuple
 
-MOVE: dict[str, tuple[int, int]] = {
+
+MOVE: Dict[str, Tuple[int, int]] = {
     'N': (-1,  0),
     'S': (1,  0),
     'E': (0,  1),
     'W': (0, -1)
 }
 
-OPPOSITE: dict[str, str] = {
+OPPOSITE: Dict[str, str] = {
     'N': 'S',
     'S': 'N',
     'E': 'W',
@@ -27,8 +29,8 @@ class MazeGenerator:
     def __init__(self,
                  width: int,
                  height: int,
-                 entry: tuple[int, int],
-                 exit: tuple[int, int],
+                 entry: Tuple[int, int],
+                 exit: Tuple[int, int],
                  output_file: str,
                  perfect: bool,
                  seed: str | None
@@ -36,18 +38,18 @@ class MazeGenerator:
         """Store the parametres of the maze and init empty maze"""
         self._width: int = width
         self._height: int = height
-        self._entry: tuple[int, int] = entry
-        self._exit_pos: tuple[int, int] = exit
+        self._entry: Tuple[int, int] = entry
+        self._exit_pos: Tuple[int, int] = exit
         self._output_file: str = output_file
         self._perfect: bool = perfect
         self._seed: str | None = seed
-        self._maze: list[list[dict[str, bool]]] = []
+        self._maze: List[List[Dict[str, bool]]] = []
         self._solution: str = ""
 
     def solution(self) -> str:
         return self._solution
 
-    def maze(self) -> list[list[dict[str, bool]]]:
+    def maze(self) -> List[List[Dict[str, bool]]]:
         return self._maze
 
     def generate(self) -> None:
@@ -59,11 +61,11 @@ class MazeGenerator:
             self._break_more_walls()
         self._solution = self._find_path()
 
-    def _create_maze(self) -> list[list[dict[str, bool]]]:
+    def _create_maze(self) -> List[List[Dict[str, bool]]]:
         """Create maze with all the walls closed"""
-        maze: list[list[dict[str, bool]]] = []
+        maze: List[List[Dict[str, bool]]] = []
         for _ in range(self._height):
-            row: list[dict[str, bool]] = []
+            row: List[Dict[str, bool]] = []
             for _ in range(self._width):
                 cell = {'N': True, 'E': True, 'S': True, 'W': True}
                 row.append(cell)
@@ -83,13 +85,13 @@ class MazeGenerator:
             and it calls the function open_walls to open the walls for the cell
             and it neigbor"""
 
-        visited: list[list[bool]] = [
+        visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)]
-        stack: list[tuple[int, int]] = [(0, 0)]
+        stack: List[Tuple[int, int]] = [(0, 0)]
         visited[0][0] = True
         while stack:
             row, col = stack[-1]
-            neigbors: list[tuple[int, int, str]] = []
+            neigbors: List[Tuple[int, int, str]] = []
             for direcction in ['N', 'E', 'S', 'W']:
                 dr, dc = MOVE[direcction]
                 next_row = row + dr
@@ -135,9 +137,9 @@ class MazeGenerator:
         entryr: int = self._entry[1]
         exitc: int = self._exit_pos[0]
         exitr: int = self._exit_pos[1]
-        visited: list[list[bool]] = [
+        visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)]
-        queue: deque[tuple[int, int, str]] = deque()
+        queue: deque[Tuple[int, int, str]] = deque()
         queue.append((entryr, entryc, ""))
         visited[entryr][entryc] = True
         while queue:
@@ -157,19 +159,20 @@ class MazeGenerator:
 
 def parse_config(
         file: str
-) -> dict[str, int | bool | tuple[int, int] | str | None]:
+) -> Dict[str, int | bool | Tuple[int, int] | str | None]:
     """read the config file and validate it and parse it to dict"""
 
     def _check_output_file(file: str) -> str:
         allowed_dir = os.path.dirname(__file__)
         output_path = os.path.realpath(os.path.join(allowed_dir, file))
         if os.path.dirname(output_path) != allowed_dir:
+            os.system("clear")
             print("Error: OUTPUT_FILE must be in the script directory")
             exit(1)
         return output_path
 
-    config: dict[str, str] = {}
-    keys: list[str] = ["WIDTH", "HEIGHT",
+    config: Dict[str, str] = {}
+    keys: List[str] = ["WIDTH", "HEIGHT",
                        "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
     try:
         with open(file, 'r') as f:
@@ -196,8 +199,8 @@ def parse_config(
         entry_x, entry_y = config['ENTRY'].strip("() ").split(',')
         exit_x, exit_y = config['EXIT'].strip("() ").split(',')
 
-        entry_pos: tuple[int, int] = (int(entry_x), int(entry_y))
-        exit_pos: tuple[int, int] = (int(exit_x), int(exit_y))
+        entry_pos: Tuple[int, int] = (int(entry_x), int(entry_y))
+        exit_pos: Tuple[int, int] = (int(exit_x), int(exit_y))
         if "SEED" not in config or config['SEED'].strip() == "":
             seed: str | None = None
         else:
@@ -237,7 +240,7 @@ def parse_config(
 
 
 def grid_print(
-    grid: list[list[str]],
+    grid: List[List[str]],
     width: int,
     height: int
 ) -> None:
@@ -254,17 +257,17 @@ def grid_print(
 
 
 def print_maze(
-    maze: list[list[dict[str, bool]]],
+    maze: List[List[Dict[str, bool]]],
     width: int,
     height: int,
-    entry: tuple[int, int],
-    exit_pos: tuple[int, int],
+    entry: Tuple[int, int],
+    exit_pos: Tuple[int, int],
     walls_color: str,
     wall_char: str = "██"
-) -> list[list[str]]:
+) -> List[List[str]]:
     rows = height * 2 + 1
     cols = width * 2 + 1
-    grid: list[list[str]] = [
+    grid: List[List[str]] = [
         [walls_color + wall_char + '\033[0m'] * (cols) for _ in range(rows)]
     for row in range(height):
         for col in range(width):
@@ -291,8 +294,8 @@ def print_maze(
 
 def print_path(
     solution: str | None,
-    entry: tuple[int, int],
-    grid: list[list[str]],
+    entry: Tuple[int, int],
+    grid: List[List[str]],
     width: int, height: int,
     path_color: str,
     path_char: str = "▓▓"
@@ -324,7 +327,7 @@ def print_path(
 
 
 def welcom() -> None:
-    welcom_msg: list[str] = [
+    welcom_msg: List[str] = [
         " " * 24 + "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗██" +
         "█████╗",
         " " * 24 + "██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██" +
@@ -372,7 +375,7 @@ def welcom() -> None:
 
 def exit_code() -> None:
     def _good_bye() -> None:
-        good_msg: list[str] = [
+        good_msg: List[str] = [
             " ██████╗  ██████╗  ██████╗ ██████╗",
             "██╔════╝ ██╔═══██╗██╔═══██╗██╔══██╗",
             "██║  ███╗██║   ██║██║   ██║██║  ██║",
@@ -413,33 +416,24 @@ def middel_print(message: str) -> None:
 
 def maze_controle() -> None:
     print("\n" * 3)
-    middel_print("PRESS: " +
-                 '\033[31m' + "(Q,q) to QUIT" + '\033[0m' +
-                 " ; (R,r) to REGENERATE ; (P,p) to Show PATH;")
-    middel_print("(1) to change walls COLORS    ;")
-    middel_print("(2) to change path COLORS     ;")
-    middel_print("(3) to change walls CHARACTERS;")
-    middel_print("(4) to change path CHARACTERS  ")
-
-
-# colors: dict[str, str] = {
-#         'WHITE': '\033[0m',
-#         'RED': '\033[31m',
-#         'ORANGE': '\033[91m',
-#         'GRN': '\033[92m',
-#         'YLW': '\033[93m',
-#         'BLUE': '\033[94m',
-#         'PURPLE': '\033[95m',
-#         'SKYBLUE': '\033[96m',
-#     }
+    msg: List[str] = ["PRESS: " +
+                      '\033[31m' + "(Q,q) to QUIT" + '\033[0m' +
+                      " ; (R,r) to REGENERATE ; (P,p) to Show PATH;",
+                      "(1) to change walls COLORS    ;",
+                      "(2) to change path COLORS     ;",
+                      "(3) to change walls CHARACTERS;",
+                      "(4) to change path CHARACTERS  "
+                      ]
+    for i in msg:
+        middel_print(i)
 
 
 def main() -> None:
-    colorado: list[str] = ['\033[0m', '\033[31m', '\033[91m',
+    colorado: List[str] = ['\033[0m', '\033[31m', '\033[91m',
                            '\033[92m', '\033[93m', '\033[94m',
                            '\033[95m', '\033[96m']
-    emoji: list[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥']
-    emoji2: list[str] = ['▓▓', '🐭', '🐾', '🌟',
+    emoji: List[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🪨', '🔥']
+    emoji2: List[str] = ['▓▓', '🐭', '🐾', '🌟',
                          '🍬', '💎', '🔮', '🫧', '🍪', '👣', '42', '@@']
     w: int = -1
     wc: int = -1
@@ -453,7 +447,7 @@ def main() -> None:
     old_rows: int = 0
     path: bool = False
 
-    def _check_terminal() -> tuple[int, int]:
+    def _check_terminal() -> Tuple[int, int]:
         new_col, new_rows = os.get_terminal_size()
         if (old_col, old_rows) != (new_col, new_rows):
             if path:
@@ -461,20 +455,20 @@ def main() -> None:
                     path_char=path_char,
                     path_color=path_color,
                     solution=gen.solution(),
-                    entry=config['entry'],
+                    entry=cast(Tuple[int, int], config['entry']),
                     grid=grid,
-                    width=config['width'],
-                    height=config['height']
+                    width=cast(int, config['width']),
+                    height=cast(int, config['height'])
                 )
             else:
                 print_maze(
                     wall_char=wall_char,
                     walls_color=wall_color,
                     maze=gen.maze(),
-                    width=config['width'],
-                    height=config['height'],
-                    entry=config['entry'],
-                    exit_pos=config['exit']
+                    width=cast(int, config['width']),
+                    height=cast(int, config['height']),
+                    entry=cast(Tuple[int, int], config['entry']),
+                    exit_pos=cast(Tuple[int, int], config['exit'])
                 )
         return (new_col, new_rows)
 
@@ -485,23 +479,23 @@ def main() -> None:
             os.system("clear")
             config = parse_config("config.txt")
             gen = MazeGenerator(
-                width=config['width'],
-                height=config['height'],
-                entry=config['entry'],
-                exit=config['exit'],
-                output_file=config['output_file'],
-                perfect=config['perfect'],
-                seed=config['seed']
+                width=cast(int, config['width']),
+                height=cast(int, config['height']),
+                entry=cast(Tuple[int, int], config['entry']),
+                exit=cast(Tuple[int, int], config['exit']),
+                output_file=cast(str, config['output_file']),
+                perfect=cast(bool, config['perfect']),
+                seed=cast(str | None, config['seed'])
             )
             gen.generate()
             grid = print_maze(
                 wall_char=wall_char,
                 walls_color=wall_color,
                 maze=gen.maze(),
-                width=config['width'],
-                height=config['height'],
-                entry=config['entry'],
-                exit_pos=config['exit']
+                width=cast(int, config['width']),
+                height=cast(int, config['height']),
+                entry=cast(Tuple[int, int], config['entry']),
+                exit_pos=cast(Tuple[int, int], config['exit'])
             )
             while True:
                 char = get_char()
@@ -509,23 +503,23 @@ def main() -> None:
                 if char in ['R', 'r']:
                     config = parse_config("config.txt")
                     gen = MazeGenerator(
-                        width=config['width'],
-                        height=config['height'],
-                        entry=config['entry'],
-                        exit=config['exit'],
-                        output_file=config['output_file'],
-                        perfect=config['perfect'],
-                        seed=config['seed']
+                        width=cast(int, config['width']),
+                        height=cast(int, config['height']),
+                        entry=cast(Tuple[int, int], config['entry']),
+                        exit=cast(Tuple[int, int], config['exit']),
+                        output_file=cast(str, config['output_file']),
+                        perfect=cast(bool, config['perfect']),
+                        seed=cast(str | None, config['seed'])
                     )
                     gen.generate()
                     grid = print_maze(
                         wall_char=wall_char,
                         walls_color=wall_color,
                         maze=gen.maze(),
-                        width=config['width'],
-                        height=config['height'],
-                        entry=config['entry'],
-                        exit_pos=config['exit']
+                        width=cast(int, config['width']),
+                        height=cast(int, config['height']),
+                        entry=cast(Tuple[int, int], config['entry']),
+                        exit_pos=cast(Tuple[int, int], config['exit'])
                     )
                     path = False
                 elif char in ['P', 'p']:
@@ -534,10 +528,10 @@ def main() -> None:
                             path_char=path_char,
                             path_color=path_color,
                             solution=gen.solution(),
-                            entry=config['entry'],
+                            entry=cast(Tuple[int, int], config['entry']),
                             grid=grid,
-                            width=config['width'],
-                            height=config['height']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height'])
                         )
                         path = True
                     else:
@@ -545,10 +539,10 @@ def main() -> None:
                             wall_char=wall_char,
                             walls_color=wall_color,
                             maze=gen.maze(),
-                            width=config['width'],
-                            height=config['height'],
-                            entry=config['entry'],
-                            exit_pos=config['exit']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height']),
+                            entry=cast(Tuple[int, int], config['entry']),
+                            exit_pos=cast(Tuple[int, int], config['exit'])
                         )
                         path = False
                 elif char == '1':
@@ -558,20 +552,20 @@ def main() -> None:
                         wall_char=wall_char,
                         walls_color=wall_color,
                         maze=gen.maze(),
-                        width=config['width'],
-                        height=config['height'],
-                        entry=config['entry'],
-                        exit_pos=config['exit']
+                        width=cast(int, config['width']),
+                        height=cast(int, config['height']),
+                        entry=cast(Tuple[int, int], config['entry']),
+                        exit_pos=cast(Tuple[int, int], config['exit'])
                     )
                     if path:
                         print_path(
                             path_char=path_char,
                             path_color=path_color,
                             solution=gen.solution(),
-                            entry=config['entry'],
+                            entry=cast(Tuple[int, int], config['entry']),
                             grid=grid,
-                            width=config['width'],
-                            height=config['height']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height'])
                         )
                 elif char == '2':
                     p += 1
@@ -581,10 +575,10 @@ def main() -> None:
                             path_char=path_char,
                             path_color=path_color,
                             solution=gen.solution(),
-                            entry=config['entry'],
+                            entry=cast(Tuple[int, int], config['entry']),
                             grid=grid,
-                            width=config['width'],
-                            height=config['height']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height'])
                         )
                 elif char == '3':
                     wc += 1
@@ -593,20 +587,20 @@ def main() -> None:
                         wall_char=wall_char,
                         walls_color=wall_color,
                         maze=gen.maze(),
-                        width=config['width'],
-                        height=config['height'],
-                        entry=config['entry'],
-                        exit_pos=config['exit']
+                        width=cast(int, config['width']),
+                        height=cast(int, config['height']),
+                        entry=cast(Tuple[int, int], config['entry']),
+                        exit_pos=cast(Tuple[int, int], config['exit'])
                     )
                     if path:
                         print_path(
                             path_char=path_char,
                             path_color=path_color,
                             solution=gen.solution(),
-                            entry=config['entry'],
+                            entry=cast(Tuple[int, int], config['entry']),
                             grid=grid,
-                            width=config['width'],
-                            height=config['height']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height'])
                         )
                 elif char == '4':
                     pc += 1
@@ -616,10 +610,10 @@ def main() -> None:
                             path_char=path_char,
                             path_color=path_color,
                             solution=gen.solution(),
-                            entry=config['entry'],
+                            entry=cast(Tuple[int, int], config['entry']),
                             grid=grid,
-                            width=config['width'],
-                            height=config['height']
+                            width=cast(int, config['width']),
+                            height=cast(int, config['height'])
                         )
                 elif char in ['Q', 'q']:
                     middel_print("Do u want really to " +
@@ -636,20 +630,23 @@ def main() -> None:
                                     path_char=path_char,
                                     path_color=path_color,
                                     solution=gen.solution(),
-                                    entry=config['entry'],
+                                    entry=cast(Tuple[int, int],
+                                               config['entry']),
                                     grid=grid,
-                                    width=config['width'],
-                                    height=config['height']
+                                    width=cast(int, config['width']),
+                                    height=cast(int, config['height'])
                                 )
                             else:
                                 grid = print_maze(
                                     wall_char=wall_char,
                                     walls_color=wall_color,
                                     maze=gen.maze(),
-                                    width=config['width'],
-                                    height=config['height'],
-                                    entry=config['entry'],
-                                    exit_pos=config['exit']
+                                    width=cast(int, config['width']),
+                                    height=cast(int, config['height']),
+                                    entry=cast(Tuple[int, int],
+                                               config['entry']),
+                                    exit_pos=cast(
+                                        Tuple[int, int], config['exit'])
                                 )
                             break
         elif char in ['Q', 'q']:
@@ -681,15 +678,6 @@ def get_char() -> str:
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-# def get_char():
-#     fd = sys.stdin.fileno()
-#     old_settings = termios.tcgetattr(fd)
-
-#     try:
-#         tty.setraw(fd)
-#         return sys.stdin.read(1)
-#     finally:
-#         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 if __name__ == '__main__':

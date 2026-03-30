@@ -3,7 +3,7 @@ WIDTH=1
 HEIGHT=2
 ENTRY=(   0,	0)
 EXIT=0,1
-OUTPUT_FILE= 	../file
+#OUTPUT_FILE= 	file
 PERFECT=1
 
 # see
