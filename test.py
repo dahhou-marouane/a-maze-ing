@@ -1,0 +1,1 @@
+print(hex(0)[2:].upper())
