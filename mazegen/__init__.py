@@ -21,20 +21,18 @@ OPPOSITE: Dict[str, str] = {
 class MazeGenerator:
 
     def __init__(self,
-                 width: int,
-                 height: int,
-                 entry: Tuple[int, int],
-                 exit: Tuple[int, int],
-                 output_file: str,
-                 perfect: bool,
-                 seed: str | None
+                 width: int = 20,
+                 height: int = 20,
+                 entry: Tuple[int, int] = (0, 0),
+                 exit: Tuple[int, int]= (19, 19),
+                 perfect: bool = True,
+                 seed: str | None = None
                  ) -> None:
         """Store the parametres of the maze and init empty maze"""
         self._width: int = width
         self._height: int = height
         self._entry: Tuple[int, int] = entry
         self._exit_pos: Tuple[int, int] = exit
-        self._output_file: str = output_file
         self._perfect: bool = perfect
         self._seed: str | None = seed
         self._maze: List[List[Dict[str, bool]]] = []
