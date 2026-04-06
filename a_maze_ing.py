@@ -33,8 +33,8 @@ class AllData:
     perfect: bool
     seed: str | None
     grid: List[List[str]]
-    maze: List[List[Dict[str, bool]]] = gen.maze()
-    solution: str = gen.solution()
+    maze: List[List[Dict[str, bool]]]
+    solution: str
     output_file: str
     config_file: str = ""
     def regenerate(self) -> None:
@@ -46,7 +46,12 @@ class AllData:
                 perfect=self.perfect,
                 seed=self.seed
                 )
-        self.gen.generate()
+        try:
+            self.gen.generate()
+        except ValueError as e:
+            os.system("clear")
+            print("ERROR:", e)
+            exit(1)
         self.maze = self.gen.maze()
         self.solution = self.gen.solution()
         write_output(self)
@@ -116,8 +121,10 @@ def parse_config(data: AllData) -> None:
 
         entry_pos: Tuple[int, int] = (int(entry_x), int(entry_y))
         exit_pos: Tuple[int, int] = (int(exit_x), int(exit_y))
-        if "SEED" not in config or config['SEED'].strip() == "":
+        if "SEED" not in config:
             seed: str | None = None
+        elif config['SEED'].strip() == "":
+            raise ValueError("SEED must have a value")
         else:
             seed = config['SEED']
         perfect: str | bool = config['PERFECT'].strip().lower()
@@ -167,9 +174,20 @@ def grid_print(data: AllData) -> None:
         for i in _:
             print(i, end="")
         print()
+    if data.height < 9 or data.width < 9:
+        middel_print("The maze is small to add the 42_stamp")
 
 
 def print_maze(data: AllData) -> None:
+    stamp: List[Tuple[int, int]] = [
+                # 4
+                (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (3, 2), (4, 2),
+                # 2
+                (0, 4), (0, 5), (0, 6), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (4, 4),
+                (4, 5), (4, 6)
+                ]
+    start_row = (data.height - 5) // 2
+    start_col = (data.width  - 7) // 2
     rows: int = data.height * 2 + 1
     cols: int = data.width * 2 + 1
     data.grid = [[data.wall_color + data.wall_char + '\033[0m'] * (cols) for _ in range(rows)]
@@ -191,6 +209,9 @@ def print_maze(data: AllData) -> None:
                 data.grid[cr][cc + 1] = '  '
             if not cell['W']:
                 data.grid[cr][cc - 1] = '  '
+    if data.height > 8 or data.width > 8:
+        for r, c in stamp:
+            data.grid[(r + start_row) * 2 + 1][(c + start_col) * 2 + 1] = data.wall_color + data.wall_char + '\033[0m'
     grid_print(data=data)
     maze_controle()
 

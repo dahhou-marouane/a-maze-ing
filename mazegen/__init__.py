@@ -17,22 +17,7 @@ OPPOSITE: Dict[str, str] = {
     'W': 'E'
 }
 
-DIGIT_GLYPHS = {
-    '4': [
-        [1, 0, 1],
-        [1, 0, 1],
-        [1, 1, 1],
-        [0, 0, 1],
-        [0, 0, 1],
-    ],
-    '2': [
-        [1, 1, 1],
-        [0, 0, 1],
-        [1, 1, 1],
-        [1, 0, 0],
-        [1, 1, 1],
-    ],
-}
+
 class MazeGenerator:
 
     def __init__(self,
@@ -52,7 +37,7 @@ class MazeGenerator:
         self._seed: str | None = seed
         self._maze: List[List[Dict[str, bool]]] = []
         self._solution: str = ""
-        self._cells: set
+        self._stamp: List[Tuple[int, int]] = []
 
     def solution(self) -> str:
         return self._solution
@@ -64,26 +49,10 @@ class MazeGenerator:
         """Generate the maze with DFS algo"""
         random.seed(self._seed)
         self._maze = self._create_maze()
-        self._cells = self._get_42_cells()
         self._dfs_algo()
         if not self._perfect:
             self._break_more_walls()
         self._solution = self._find_path()
-
-    def _get_42_cells(self) -> set:
-        """Return set of (row, col) that form the '42' digits, centered in the maze."""
-        total_w = 7  # 3 + 1 gap + 3
-        total_h = 5
-        start_row = (self._height - total_h) // 2
-        start_col = (self._width  - total_w) // 2
-
-        cells = set()
-        for digit, col_offset in [('4', 0), ('2', 4)]:
-            for r, row_bits in enumerate(DIGIT_GLYPHS[digit]):
-                for c, bit in enumerate(row_bits):
-                    if bit:
-                        cells.add((start_row + r, start_col + col_offset + c))
-        return cells
 
     def _create_maze(self) -> List[List[Dict[str, bool]]]:
         """Create maze with all the walls closed"""
@@ -108,12 +77,27 @@ class MazeGenerator:
         """Function of dfs_algo to generate the maze by DFS algo using seed
             and it calls the function open_walls to open the walls for the cell
             and it neigbor"""
-
-
         visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)]
-        for (r, c) in self._cells:
-            visited[r][c] = True
+
+        if (self._height >= 9 and self._width >= 9):
+            start_row = (self._height - 5) // 2
+            start_col = (self._width  - 7) // 2
+            stamp: List[Tuple[int, int]] = [
+                # 4
+                (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (3, 2), (4, 2),
+                # 2
+                (0, 4), (0, 5), (0, 6), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (4, 4),
+                (4, 5), (4, 6)
+                ]
+            for r, c in stamp:
+                if (c + start_col, r + start_row) == self._entry:
+                    raise ValueError("ENTRY must not be on the 42_stamp")
+                elif (c + start_col, r + start_row) == self._exit_pos:
+                    raise ValueError("EXIT must not be on the 42_stamp")
+                visited[r + start_row][c + start_col] = True
+                self._stamp.append((r + start_row, c + start_col))
+
         stack: List[Tuple[int, int]] = [(0, 0)]
         visited[0][0] = True
         while stack:
@@ -142,8 +126,6 @@ class MazeGenerator:
         breaked: int = 0
         visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)]
-        for (r, c) in self._cells:
-            visited[r][c] = True
         while breaked < wallstobreak:
             row: int = random.randint(0, self._height - 1)
             col: int = random.randint(0, self._width - 1)
@@ -154,9 +136,9 @@ class MazeGenerator:
             if not (0 <= next_row < self._height and
                     0 <= next_col < self._width):
                 continue
-            if visited[row][col]:
+            if visited[row][col] or visited[next_row][next_col]:
                 continue
-            if visited[next_row][next_col]:
+            if (row, col) in self._stamp or (next_row, next_col) in self._stamp:
                 continue
             if self._maze[row][col][direction] is False:
                 continue

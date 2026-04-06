@@ -1,10 +1,9 @@
 # Default A-Maze-ing configuration
-WIDTH=30
-HEIGHT=30
+WIDTH=50
+HEIGHT=50
 ENTRY=(   0,	0)
-EXIT=19,19
+EXIT=8,8
 OUTPUT_FILE=a
-PERFECT=1
-
+PERFECT=0
 # see
 allowed_dir = os.path.realpath(".")
