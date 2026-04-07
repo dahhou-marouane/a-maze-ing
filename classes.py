@@ -20,11 +20,18 @@ class Config:
 class DisplayConfig:
     """Manages visual settings: colors, characters, and display state."""
 
-    _colorado: List[str] = ['\033[0m', '\033[31m', '\033[91m',
-                           '\033[92m', '\033[93m', '\033[94m',
-                           '\033[95m', '\033[96m']
-    _emoji: List[str] = ['██', '42', '$$', '@@', '##', '**', '&&', 'MM', '00']
-    _emoji2: List[str] = ['▓▓', '13', '%%', '++', 'NN']
+    _colorado: List[str] = [
+        "\033[0m",
+        "\033[31m",
+        "\033[91m",
+        "\033[92m",
+        "\033[93m",
+        "\033[94m",
+        "\033[95m",
+        "\033[96m",
+    ]
+    _emoji: List[str] = ["██", "42", "$$", "@@", "##", "**", "&&", "MM", "00"]
+    _emoji2: List[str] = ["▓▓", "13", "%%", "++", "NN"]
     wall_char: str = _emoji[0]
     path_char: str = _emoji2[0]
     wall_color: str = ""
@@ -59,12 +66,12 @@ class DisplayConfig:
         """Cycles to the next path character."""
 
         self._pc += 1
-        self.path_char = self._emoji2[(self._pc + 1 )% len(self._emoji2)]
+        self.path_char = self._emoji2[(self._pc + 1) % len(self._emoji2)]
 
 
 class MazeState:
     """Holds the generated maze data and owns the generation lifecycle."""
-    
+
     def __init__(self, config: Config) -> None:
         """Initialises an empty maze state from the given config.
 
@@ -81,13 +88,13 @@ class MazeState:
         """Re-generates the maze and updates grid, maze, and solution."""
 
         gen = MazeGenerator(
-                width=self.config.width,
-                height=self.config.height,
-                entry=self.config.entry,
-                exit=self.config.exit_pos,
-                perfect=self.config.perfect,
-                seed=self.config.seed
-                )
+            width=self.config.width,
+            height=self.config.height,
+            entry=self.config.entry,
+            exit=self.config.exit_pos,
+            perfect=self.config.perfect,
+            seed=self.config.seed,
+        )
         try:
             gen.generate()
         except ValueError as e:
@@ -107,7 +114,7 @@ def write_output(state: MazeState, config: Config) -> None:
         config: Config holding the output file path.
     """
 
-    wall_direction: Dict[str, int] = {'N': 1, 'E': 2, 'S': 4, 'W': 8}
+    wall_direction: Dict[str, int] = {"N": 1, "E": 2, "S": 4, "W": 8}
     try:
         with open(config.output_file, "w") as f:
             for row in range(config.height):

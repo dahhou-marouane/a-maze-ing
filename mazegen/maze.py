@@ -2,20 +2,14 @@ from typing import List, Dict, Tuple
 import random
 from collections import deque
 
-
 MOVE: Dict[str, Tuple[int, int]] = {
-    'N': (-1,  0),
-    'S': (1,  0),
-    'E': (0,  1),
-    'W': (0, -1)
+    "N": (-1, 0),
+    "S": (1, 0),
+    "E": (0, 1),
+    "W": (0, -1),
 }
 
-OPPOSITE: Dict[str, str] = {
-    'N': 'S',
-    'S': 'N',
-    'E': 'W',
-    'W': 'E'
-}
+OPPOSITE: Dict[str, str] = {"N": "S", "S": "N", "E": "W", "W": "E"}
 
 
 class MazeGenerator:
@@ -42,14 +36,15 @@ class MazeGenerator:
         solution = gen.solution()
     """
 
-    def __init__(self,
-                 width: int = 20,
-                 height: int = 20,
-                 entry: Tuple[int, int] = (0, 0),
-                 exit: Tuple[int, int]= (19, 19),
-                 perfect: bool = True,
-                 seed: str | None = None
-                 ) -> None:
+    def __init__(
+        self,
+        width: int = 20,
+        height: int = 20,
+        entry: Tuple[int, int] = (0, 0),
+        exit: Tuple[int, int] = (19, 19),
+        perfect: bool = True,
+        seed: str | None = None,
+    ) -> None:
         """Store the parametres of the maze and init empty maze"""
         self._width: int = width
         self._height: int = height
@@ -62,7 +57,8 @@ class MazeGenerator:
         self._stamp: List[Tuple[int, int]] = []
 
     def solution(self) -> str:
-        """Returns the shortest path from entry to exit as 'N;E;S;W' characters."""
+        """Returns the shortest path from entry to exit
+        as 'N;E;S;W' characters."""
         return self._solution
 
     def maze(self) -> List[List[Dict[str, bool]]]:
@@ -77,7 +73,8 @@ class MazeGenerator:
         """Builds the maze and computes its solution.
 
         Initialises the grid, runs DFS, optionally breaks extra
-        walls if imprefect maze, then stores the BFS shortest path in ``_solution``.
+        walls if imprefect maze, then stores the BFS shortest
+        path in ``_solution``.
         """
         random.seed(self._seed)
         self._maze = self._create_maze()
@@ -96,7 +93,7 @@ class MazeGenerator:
         for _ in range(self._height):
             row: List[Dict[str, bool]] = []
             for _ in range(self._width):
-                cell = {'N': True, 'E': True, 'S': True, 'W': True}
+                cell = {"N": True, "E": True, "S": True, "W": True}
                 row.append(cell)
             maze.append(row)
         return maze
@@ -125,18 +122,36 @@ class MazeGenerator:
             ValueError: If entry or exit overlaps a "42" stamp cell.
         """
         visited: List[List[bool]] = [
-            [False] * self._width for _ in range(self._height)]
+            [False] * self._width for _ in range(self._height)
+        ]
 
-        if (self._height >= 9 and self._width >= 9):
+        if self._height >= 9 and self._width >= 9:
             start_row = (self._height - 5) // 2
-            start_col = (self._width  - 7) // 2
+            start_col = (self._width - 7) // 2
             stamp: List[Tuple[int, int]] = [
                 # 4
-                (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (3, 2), (4, 2),
+                (0, 0),
+                (1, 0),
+                (2, 0),
+                (2, 1),
+                (2, 2),
+                (1, 2),
+                (0, 2),
+                (3, 2),
+                (4, 2),
                 # 2
-                (0, 4), (0, 5), (0, 6), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (4, 4),
-                (4, 5), (4, 6)
-                ]
+                (0, 4),
+                (0, 5),
+                (0, 6),
+                (1, 6),
+                (2, 4),
+                (2, 5),
+                (2, 6),
+                (3, 4),
+                (4, 4),
+                (4, 5),
+                (4, 6),
+            ]
             for r, c in stamp:
                 if (c + start_col, r + start_row) == self._entry:
                     raise ValueError("ENTRY must not be on the 42_stamp")
@@ -150,13 +165,15 @@ class MazeGenerator:
         while stack:
             row, col = stack[-1]
             neigbors: List[Tuple[int, int, str]] = []
-            for direcction in ['N', 'E', 'S', 'W']:
+            for direcction in ["N", "E", "S", "W"]:
                 dr, dc = MOVE[direcction]
                 next_row = row + dr
                 next_col = col + dc
-                if (0 <= next_row < self._height and
-                        0 <= next_col < self._width and not
-                        visited[next_row][next_col]):
+                if (
+                    0 <= next_row < self._height
+                    and 0 <= next_col < self._width
+                    and not visited[next_row][next_col]
+                ):
                     neigbors.append((next_row, next_col, direcction))
             if neigbors:
                 next_row, next_col, direcction = random.choice(neigbors)
@@ -177,7 +194,7 @@ class MazeGenerator:
             True if safe to break, False otherwise
         """
         opened: int = 0
-        for direction in ['N', 'S', 'E', 'W']:
+        for direction in ["N", "S", "E", "W"]:
             dr, dc = MOVE[direction]
             nr = row + dr
             nc = col + dc
@@ -198,20 +215,26 @@ class MazeGenerator:
         wallstobreak: int = int((self._width * self._height) * 0.15)
         breaked: int = 0
         visited: List[List[bool]] = [
-            [False] * self._width for _ in range(self._height)]
+            [False] * self._width for _ in range(self._height)
+        ]
         while breaked < wallstobreak:
             row: int = random.randint(0, self._height - 1)
             col: int = random.randint(0, self._width - 1)
-            direction: str = random.choice(['N', 'E', 'S', 'W'])
+            direction: str = random.choice(["N", "E", "S", "W"])
             dr, dc = MOVE[direction]
             next_row = row + dr
             next_col = col + dc
-            if not (0 <= next_row < self._height and
-                    0 <= next_col < self._width):
+            if not (
+                0 <= next_row < self._height
+                and 0 <= next_col < self._width
+            ):
                 continue
             if visited[row][col] or visited[next_row][next_col]:
                 continue
-            if (row, col) in self._stamp or (next_row, next_col) in self._stamp:
+            if (
+                (row, col) in self._stamp
+                or (next_row, next_col) in self._stamp
+            ):
                 continue
             if self._maze[row][col][direction] is False:
                 continue
@@ -235,7 +258,8 @@ class MazeGenerator:
         exitc: int = self._exit_pos[0]
         exitr: int = self._exit_pos[1]
         visited: List[List[bool]] = [
-            [False] * self._width for _ in range(self._height)]
+            [False] * self._width for _ in range(self._height)
+        ]
         queue: deque[Tuple[int, int, str]] = deque()
         queue.append((entryr, entryc, ""))
         visited[entryr][entryc] = True
@@ -243,7 +267,7 @@ class MazeGenerator:
             row, col, path = queue.popleft()
             if row == exitr and col == exitc:
                 return path
-            for direction in ['N', 'E', 'S', 'W']:
+            for direction in ["N", "E", "S", "W"]:
                 if not self._maze[row][col][direction]:
                     dr, dc = MOVE[direction]
                     next_row = row + dr

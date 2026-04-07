@@ -7,6 +7,7 @@ from classes import Config
 def parse_config() -> Config:
     """read the config file and validate it and parse it to dict"""
     config_file = sys.argv[1]
+
     def _check_output_file(file: str) -> None:
         if not file:
             print("Error config file: OUTPUT_FILE cannot be ''")
@@ -15,25 +16,36 @@ def parse_config() -> Config:
         output_path = os.path.realpath(os.path.join(allowed_dir, file))
         if os.path.dirname(output_path) != allowed_dir:
             os.system("clear")
-            print("Error config file: OUTPUT_FILE must be in the "
-                  "script directory")
+            print(
+                "Error config file: OUTPUT_FILE"
+                " must be in the " "script directory")
             exit(1)
 
     config: Dict[str, str] = {}
-    keys: List[str] = ["WIDTH", "HEIGHT",
-                       "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
+    keys: List[str] = [
+        "WIDTH",
+        "HEIGHT",
+        "ENTRY",
+        "EXIT",
+        "OUTPUT_FILE",
+        "PERFECT"
+    ]
     try:
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
-                if '=' not in line:
+                if "=" not in line:
                     raise ValueError(f"Bad config line [{line}]")
-                key, value = line.split('=', 1)
+                key, value = line.split("=", 1)
                 config[key.upper().strip()] = value.strip()
-    except (FileNotFoundError, IsADirectoryError,
-            PermissionError, ValueError) as e:
+    except (
+        FileNotFoundError,
+        IsADirectoryError,
+        PermissionError,
+        ValueError
+    ) as e:
         print("Error:", e)
         exit(1)
     for key, _ in config.items():
@@ -48,34 +60,40 @@ def parse_config() -> Config:
             exit(1)
     try:
         try:
-            width: int = int(config['WIDTH'])
-        except ValueError as e:
+            width: int = int(config["WIDTH"])
+        except ValueError:
             raise ValueError("Invalid int value of width")
 
         try:
-            height: int = int(config['HEIGHT'])
+            height: int = int(config["HEIGHT"])
         except ValueError:
             raise ValueError("Invalid int value of height")
 
         try:
-            entry_x, entry_y = config['ENTRY'].strip("() ").split(',')
+            entry_x, entry_y = config["ENTRY"].strip("() ").split(",")
             entry_pos: Tuple[int, int] = (int(entry_x), int(entry_y))
         except ValueError:
-            raise ValueError(f"Invalid ENTRY position: '{config['ENTRY']}' (expected format: (x,y))")
+            raise ValueError(
+                f"Invalid ENTRY position: '{config['ENTRY']}' "
+                f"(expected format: (x,y))"
+            )
 
         try:
-            exit_x, exit_y = config['EXIT'].strip("() ").split(',')
+            exit_x, exit_y = config["EXIT"].strip("() ").split(",")
             exit_pos: Tuple[int, int] = (int(exit_x), int(exit_y))
         except ValueError:
-            raise ValueError(f"Invalid EXIT position: '{config['EXIT']}' (expected format: (x,y))")
+            raise ValueError(
+                f"Invalid EXIT position: '{config['EXIT']}' "
+                f"(expected format: (x,y))"
+            )
 
         if "SEED" not in config:
             seed: str | None = None
-        elif config['SEED'].strip() == "":
+        elif config["SEED"].strip() == "":
             raise ValueError("SEED must have a value")
         else:
-            seed = config['SEED']
-        perfect: str | bool = config['PERFECT'].strip().lower()
+            seed = config["SEED"]
+        perfect: str | bool = config["PERFECT"].strip().lower()
         if perfect in ("true", "1"):
             perfect = True
         elif perfect in ("false", "0"):
@@ -97,14 +115,13 @@ def parse_config() -> Config:
     if entry_pos == exit_pos:
         print("Error: ENTRY and EXIT must be different")
         exit(1)
-    _check_output_file(config['OUTPUT_FILE'])
+    _check_output_file(config["OUTPUT_FILE"])
     return Config(
-        width= width,
+        width=width,
         height=height,
-        entry= entry_pos,
-        exit_pos= exit_pos,
-        output_file= config['OUTPUT_FILE'],
-        perfect= perfect,
-        seed=seed
-        )
-
+        entry=entry_pos,
+        exit_pos=exit_pos,
+        output_file=config["OUTPUT_FILE"],
+        perfect=perfect,
+        seed=seed,
+    )
