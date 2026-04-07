@@ -8,5 +8,6 @@ version = "1.0.0"
 description = "A maze generator library"
 requires-python = ">=3.10"
 authors = [
-    {name = "mdahhou", email = "mdahhou@student.1337.ma"}
+    {name = "mdahhou", email = "mdahhou@student.1337.ma"},
+    {name = "njabbar", email = "njabbar@student.1337.ma"}
 ]

@@ -2,8 +2,7 @@
 width=15
 HEIGHT=15
 ENTRY=0,0
-EXIT=1,14
-OUTPUT_FILE=a
-PREFECT=0
-# see
-allowed_dir = os.path.realpath(".")
+EXIT=0,14
+OUTPUT_FILE=maze.txt
+PERFECT=fAlsE
+seed= 90dd
