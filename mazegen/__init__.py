@@ -19,13 +19,19 @@ OPPOSITE: Dict[str, str] = {
 
 
 class MazeGenerator:
+    """Generates a 2D grid maze using depth-first search.
+
+    Carves passages through a fully-walled grid. Supports perfect mazes
+    (unique path between any two cells) and imperfect ones with extra loops.
+    On grids ≥(9,9), embeds a "42" pixel-art that DFS carves around.
+    """
 
     def __init__(self,
                  width: int = 20,
                  height: int = 20,
                  entry: Tuple[int, int] = (0, 0),
                  exit: Tuple[int, int]= (19, 19),
-                 perfect: bool = True,
+                 prefect: bool = True,
                  seed: str | None = None
                  ) -> None:
         """Store the parametres of the maze and init empty maze"""
@@ -33,29 +39,43 @@ class MazeGenerator:
         self._height: int = height
         self._entry: Tuple[int, int] = entry
         self._exit_pos: Tuple[int, int] = exit
-        self._perfect: bool = perfect
+        self._prefect: bool = prefect
         self._seed: str | None = seed
         self._maze: List[List[Dict[str, bool]]] = []
         self._solution: str = ""
         self._stamp: List[Tuple[int, int]] = []
 
     def solution(self) -> str:
+        """Returns the shortest path from entry to exit as 'N;E;S;W' characters."""
         return self._solution
 
     def maze(self) -> List[List[Dict[str, bool]]]:
+        """Returns the maze grid.
+
+        Returns:
+            A 2D list of cell dicts mapping direction → wall present (bool).
+        """
         return self._maze
 
     def generate(self) -> None:
-        """Generate the maze with DFS algo"""
+        """Builds the maze and computes its solution.
+
+        Initialises the grid, runs DFS, optionally breaks extra
+        walls if imprefect maze, then stores the BFS shortest path in ``_solution``.
+        """
         random.seed(self._seed)
         self._maze = self._create_maze()
         self._dfs_algo()
-        if not self._perfect:
+        if not self._prefect:
             self._break_more_walls()
         self._solution = self._find_path()
 
     def _create_maze(self) -> List[List[Dict[str, bool]]]:
-        """Create maze with all the walls closed"""
+        """Calculate a (height * width) grid with all walls intact.
+
+        Returns:
+            Grid where every cell dict has 'N;E;S;W' all set to True.
+        """
         maze: List[List[Dict[str, bool]]] = []
         for _ in range(self._height):
             row: List[Dict[str, bool]] = []
@@ -66,6 +86,13 @@ class MazeGenerator:
         return maze
 
     def _open_walls(self, row: int, col: int, direction: str) -> None:
+        """Removes the shared wall between a cell and its neighbour.
+
+        Args:
+            row: Row index of the source cell.
+            col: Column index of the source cell.
+            direction: Direction toward the neighbour ('N', 'E', 'S', or 'W').
+        """
         """Open wall between cell and neighbor cell"""
         self._maze[row][col][direction] = False
         dr, dc = MOVE[direction]
@@ -74,9 +101,14 @@ class MazeGenerator:
         self._maze[next_row][next_col][OPPOSITE[direction]] = False
 
     def _dfs_algo(self) -> None:
-        """Function of dfs_algo to generate the maze by DFS algo using seed
-            and it calls the function open_walls to open the walls for the cell
-            and it neigbor"""
+        """Carves passages using an iterative randomised DFS from (0, 0).
+
+        Pre-marks "42" cells as visited on grids so DFS carves around them,
+        leaving their walls intact.
+
+        Raises:
+            ValueError: If entry or exit overlaps a "42" stamp cell.
+        """
         visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)]
 
@@ -120,8 +152,11 @@ class MazeGenerator:
                 stack.pop()
 
     def _break_more_walls(self) -> None:
-        """This function is called after after dfs_algo fuction if the maze
-            should not be prefect to break extra walls"""
+        """Breaks ~15% of walls at random to introduce loops.
+
+        Skips stamp cells, already-open walls, and cells that have already
+        had a wall broken in this pass.
+        """
         wallstobreak: int = int((self._width * self._height) * 0.15)
         breaked: int = 0
         visited: List[List[bool]] = [
@@ -146,9 +181,11 @@ class MazeGenerator:
             breaked += 1
 
     def _find_path(self) -> str:
-        """Find shortest path from entry to exit using BFS algo.
+        """Finds the shortest path from entry to exit using BFS.
+
         Returns:
-            Path string of N/E/S/W characters e.g. 'NNEESS'
+            'N;E;S;W' direction string for the optimal route, e.g. 'SSEN'.
+            Empty string if the exit is unreachable.
         """
         entryc: int = self._entry[0]
         entryr: int = self._entry[1]

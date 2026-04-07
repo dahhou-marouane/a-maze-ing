@@ -6,79 +6,106 @@ import time
 import sys
 from typing import List, Dict, Tuple
 from mazegen import MazeGenerator
+from dataclasses import dataclass
 
-class AllData:
-    colorado: List[str] = ['\033[0m', '\033[31m', '\033[91m',
-                           '\033[92m', '\033[93m', '\033[94m',
-                           '\033[95m', '\033[96m']
-    emoji: List[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🔥']
-    emoji2: List[str] = ['▓▓', '🐭', '🐾', '🌟',
-                         '🍬', '💎', '🔮', '🍪', '👣', '42', '@@']
-    w: int = -1
-    wc: int = -1
-    p: int = -1
-    pc: int = -1
-    wall_char: str = emoji[0]
-    path_char: str = emoji2[0]
-    wall_color: str = ""
-    path_color: str = ""
-    old_col: int = 0
-    old_rows: int = 0
-    path: bool = False
-    gen: MazeGenerator = MazeGenerator()
+
+@dataclass
+class Config:
+    """Immutable settings parsed from the config file."""
     width: int
     height: int
     entry: Tuple[int, int]
     exit_pos: Tuple[int, int]
-    perfect: bool
+    prefect: bool
     seed: str | None
-    grid: List[List[str]]
-    maze: List[List[Dict[str, bool]]]
-    solution: str
     output_file: str
-    config_file: str = ""
+
+
+class DisplayConfig:
+    _colorado: List[str] = ['\033[0m', '\033[31m', '\033[91m',
+                           '\033[92m', '\033[93m', '\033[94m',
+                           '\033[95m', '\033[96m']
+    _emoji: List[str] = ['██', '42', '$$', '@@', '##', '🌲', '🍄', '🔥']
+    _emoji2: List[str] = ['▓▓', '🐭', '🐾', '🌟',
+                         '🍬', '💎', '🔮', '🍪', '👣', '42', '@@']
+    wall_char: str = _emoji[0]
+    path_char: str = _emoji2[0]
+    wall_color: str = ""
+    path_color: str = ""
+    _w: int = -1
+    _wc: int = -1
+    _p: int = -1
+    _pc: int = -1
+    path: bool = False
+    old_col: int = 0
+    old_rows: int = 0
+
+    def new_wall_colol(self) -> None:
+        self._w += 1
+        self.wall_color = self._colorado[(self._w + 1) % len(self._colorado)]
+
+    def new_wall_char(self) -> None:
+        self._wc += 1
+        self.wall_char = self._emoji[(self._wc + 1) % len(self._emoji)]
+
+    def new_path_colol(self) -> None:
+        self._p += 1
+        self.path_color = self._colorado[(self._p + 1) % len(self._colorado)]
+
+    def new_path_char(self) -> None:
+        self._pc += 1
+        self.path_char = self._emoji2[(self._pc + 1 )% len(self._emoji2)]
+
+
+class MazeState:
+    
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.grid: List[List[str]] = []
+        self.maze: List[List[Dict[str, bool]]] = []
+        self.solution: str = ""
+
     def regenerate(self) -> None:
-        self.gen = MazeGenerator(
-                width=self.width,
-                height=self.height,
-                entry=self.entry,
-                exit=self.exit_pos,
-                perfect=self.perfect,
-                seed=self.seed
+        gen = MazeGenerator(
+                width=self.config.width,
+                height=self.config.height,
+                entry=self.config.entry,
+                exit=self.config.exit_pos,
+                prefect=self.config.prefect,
+                seed=self.config.seed
                 )
         try:
-            self.gen.generate()
+            gen.generate()
         except ValueError as e:
             os.system("clear")
             print("ERROR:", e)
             exit(1)
-        self.maze = self.gen.maze()
-        self.solution = self.gen.solution()
-        write_output(self)
+        self.maze = gen.maze()
+        self.solution = gen.solution()
+        write_output(self, self.config)
 
-def write_output(data: AllData) -> None:
+def write_output(state: MazeState, config: Config) -> None:
     wall_direction: Dict[str, int] = {'N': 1, 'E': 2, 'S': 4, 'W': 8}
     try:
-        with open(data.output_file, "w") as f:
-            for row in range(data.height):
-                for col in range(data.width):
+        with open(config.output_file, "w") as f:
+            for row in range(config.height):
+                for col in range(config.width):
                     sum: int = 0
                     for direction, wall in wall_direction.items():
-                        if data.maze[row][col][direction]:
+                        if state.maze[row][col][direction]:
                             sum += wall
                     f.write(hex(sum)[2:].upper())
                 f.write("\n")
             f.write("\n")
-            f.write(f"{data.entry[0]},{data.entry[1]}\n")
-            f.write(f"{data.exit_pos[0]},{data.exit_pos[1]}\n")
-            f.write(f"{data.solution}\n")
+            f.write(f"{config.entry[0]},{config.entry[1]}\n")
+            f.write(f"{config.exit_pos[0]},{config.exit_pos[1]}\n")
+            f.write(f"{state.solution}\n")
     except (FileNotFoundError, PermissionError, IsADirectoryError):
         print("s")
 
-
-def parse_config(data: AllData) -> None:
+def parse_config() -> Config:
     """read the config file and validate it and parse it to dict"""
-    data.config_file = sys.argv[1]
+    config_file = sys.argv[1]
     def _check_output_file(file: str) -> None:
         if not file:
             print("Error config file: OUTPUT_FILE cannot be ''")
@@ -93,9 +120,9 @@ def parse_config(data: AllData) -> None:
 
     config: Dict[str, str] = {}
     keys: List[str] = ["WIDTH", "HEIGHT",
-                       "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
+                       "ENTRY", "EXIT", "OUTPUT_FILE", "PREFECT"]
     try:
-        with open(data.config_file, 'r') as f:
+        with open(config_file, 'r') as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith('#'):
@@ -103,7 +130,7 @@ def parse_config(data: AllData) -> None:
                 if '=' not in line:
                     raise ValueError(f"Bad config line [{line}]")
                 key, value = line.split('=', 1)
-                config[key.strip()] = value.strip()
+                config[key.upper().strip()] = value.strip()
     except (FileNotFoundError, IsADirectoryError,
             PermissionError, ValueError) as e:
         print("Error:", e)
@@ -113,25 +140,39 @@ def parse_config(data: AllData) -> None:
             print(f"Error: missing key [{ky}] in config file")
             exit(1)
     try:
-        width: int = int(config['WIDTH'])
-        height: int = int(config['HEIGHT'])
+        try:
+            width: int = int(config['WIDTH'])
+        except ValueError as e:
+            raise ValueError("Invalid int value of width")
 
-        entry_x, entry_y = config['ENTRY'].strip("() ").split(',')
-        exit_x, exit_y = config['EXIT'].strip("() ").split(',')
+        try:
+            height: int = int(config['HEIGHT'])
+        except ValueError:
+            raise ValueError("Invalid int value of height")
 
-        entry_pos: Tuple[int, int] = (int(entry_x), int(entry_y))
-        exit_pos: Tuple[int, int] = (int(exit_x), int(exit_y))
+        try:
+            entry_x, entry_y = config['ENTRY'].strip("() ").split(',')
+            entry_pos: Tuple[int, int] = (int(entry_x), int(entry_y))
+        except ValueError:
+            raise ValueError(f"Invalid ENTRY position: '{config['ENTRY']}' (expected format: (x,y))")
+
+        try:
+            exit_x, exit_y = config['EXIT'].strip("() ").split(',')
+            exit_pos: Tuple[int, int] = (int(exit_x), int(exit_y))
+        except ValueError:
+            raise ValueError(f"Invalid EXIT position: '{config['EXIT']}' (expected format: (x,y))")
+
         if "SEED" not in config:
             seed: str | None = None
         elif config['SEED'].strip() == "":
             raise ValueError("SEED must have a value")
         else:
             seed = config['SEED']
-        perfect: str | bool = config['PERFECT'].strip().lower()
-        if perfect in ("true", "1"):
-            perfect = True
-        elif perfect in ("false", "0"):
-            perfect = False
+        prefect: str | bool = config['PREFECT'].strip().lower()
+        if prefect in ("true", "1"):
+            prefect = True
+        elif prefect in ("false", "0"):
+            prefect = False
         else:
             raise ValueError("Invalid boolean value of prefect maze")
     except ValueError as e:
@@ -150,35 +191,37 @@ def parse_config(data: AllData) -> None:
         print("Error: ENTRY and EXIT must be different")
         exit(1)
     _check_output_file(config['OUTPUT_FILE'])
-    data.width = width
-    data.height = height
-    data.entry = entry_pos
-    data.exit_pos = exit_pos
-    data.output_file = config['OUTPUT_FILE']
-    data.perfect = perfect
-    data.seed = seed
+    return Config(
+        width= width,
+        height=height,
+        entry= entry_pos,
+        exit_pos= exit_pos,
+        output_file= config['OUTPUT_FILE'],
+        prefect= prefect,
+        seed=seed
+        )
 
 
-def grid_print(data: AllData) -> None:
+def grid_print(state: MazeState, config: Config) -> None:
     cols, rows = os.get_terminal_size()
-    if cols < (data.width * 2 + 1) * 2 + 1  or rows < data.height * 2 + 12:
+    if cols < (config.width * 2 + 1) * 2 + 1  or rows < config.height * 2 + 12:
         os.system("clear")
         middel_print("Terminal is small to print the maze")
         return
-    spaces: int = (cols - (data.width * 2 + 1) * 2) // 2
-    new_lines: int = (rows - (data.height * 2 + 1)) // 2
+    spaces: int = (cols - (config.width * 2 + 1) * 2) // 2
+    new_lines: int = (rows - (config.height * 2 + 1)) // 2
     os.system("clear")
     print("\n" * new_lines)
-    for _ in data.grid:
+    for _ in state.grid:
         print(" " * spaces, end="")
         for i in _:
             print(i, end="")
         print()
-    if data.height < 9 or data.width < 9:
+    if config.height < 9 or config.width < 9:
         middel_print("The maze is small to add the 42_stamp")
 
 
-def print_maze(data: AllData) -> None:
+def print_maze(state: MazeState, config: Config, display: DisplayConfig) -> None:
     stamp: List[Tuple[int, int]] = [
                 # 4
                 (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (3, 2), (4, 2),
@@ -186,61 +229,59 @@ def print_maze(data: AllData) -> None:
                 (0, 4), (0, 5), (0, 6), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (4, 4),
                 (4, 5), (4, 6)
                 ]
-    start_row = (data.height - 5) // 2
-    start_col = (data.width  - 7) // 2
-    rows: int = data.height * 2 + 1
-    cols: int = data.width * 2 + 1
-    data.grid = [[data.wall_color + data.wall_char + '\033[0m'] * (cols) for _ in range(rows)]
-    for row in range(data.height):
-        for col in range(data.width):
-            cell = data.maze[row][col]
+    start_row = (config.height - 5) // 2
+    start_col = (config.width  - 7) // 2
+    rows: int = config.height * 2 + 1
+    cols: int = config.width * 2 + 1
+    state.grid = [[display.wall_color + display.wall_char + '\033[0m'] * (cols) for _ in range(rows)]
+    for row in range(config.height):
+        for col in range(config.width):
+            cell = state.maze[row][col]
             cr: int = row * 2 + 1
             cc: int = col * 2 + 1
-            data.grid[cr][cc] = '  '
-            if cr == data.entry[1] * 2 + 1 and cc == data.entry[0] * 2 + 1:
-                data.grid[cr][cc] = '\033[102m' + 'EN' + '\033[0m'
-            elif cr == data.exit_pos[1] * 2 + 1 and cc == data.exit_pos[0] * 2 + 1:
-                data.grid[cr][cc] = '\033[101m' + 'EX' + '\033[0m'
+            state.grid[cr][cc] = '  '
+            if cr == config.entry[1] * 2 + 1 and cc == config.entry[0] * 2 + 1:
+                state.grid[cr][cc] = '\033[102m' + 'EN' + '\033[0m'
+            elif cr == config.exit_pos[1] * 2 + 1 and cc == config.exit_pos[0] * 2 + 1:
+                state.grid[cr][cc] = '\033[101m' + 'EX' + '\033[0m'
             if not cell['N']:
-                data.grid[cr - 1][cc] = '  '
+                state.grid[cr - 1][cc] = '  '
             if not cell['S']:
-                data.grid[cr + 1][cc] = '  '
+                state.grid[cr + 1][cc] = '  '
             if not cell['E']:
-                data.grid[cr][cc + 1] = '  '
+                state.grid[cr][cc + 1] = '  '
             if not cell['W']:
-                data.grid[cr][cc - 1] = '  '
-    if data.height > 8 or data.width > 8:
+                state.grid[cr][cc - 1] = '  '
+    if config.height > 8 or config.width > 8:
         for r, c in stamp:
-            data.grid[(r + start_row) * 2 + 1][(c + start_col) * 2 + 1] = data.wall_color + data.wall_char + '\033[0m'
-    grid_print(data=data)
+            state.grid[(r + start_row) * 2 + 1][(c + start_col) * 2 + 1] = display.wall_color + display.wall_char + '\033[0m'
+    grid_print(state=state, config=config)
     maze_controle()
 
-
-
-def print_path(data: AllData) -> None:
-    if data.solution:
-        cr: int = data.entry[1] * 2 + 1
-        cc: int = data.entry[0] * 2 + 1
-        for move in data.solution:
-            data.grid[cr][cc] = data.path_color + data.path_char + '\033[0m'
-            if cr == data.entry[1] * 2 + 1 and cc == data.entry[0] * 2 + 1:
-                data.grid[cr][cc] = '\033[102m' + 'EN' + '\033[0m'
+def print_path(state: MazeState, config: Config, display: DisplayConfig) -> None:
+    if state.solution:
+        cr: int = config.entry[1] * 2 + 1
+        cc: int = config.entry[0] * 2 + 1
+        for move in state.solution:
+            state.grid[cr][cc] = display.path_color + display.path_char + '\033[0m'
+            if cr == config.entry[1] * 2 + 1 and cc == config.entry[0] * 2 + 1:
+                state.grid[cr][cc] = '\033[102m' + 'EN' + '\033[0m'
             if move == 'N':
-                data.grid[cr - 1][cc] = data.path_color + data.path_char + '\033[0m'
+                state.grid[cr - 1][cc] = display.path_color + display.path_char + '\033[0m'
                 cr -= 2
             elif move == 'S':
-                data.grid[cr + 1][cc] = data.path_color + data.path_char + '\033[0m'
+                state.grid[cr + 1][cc] = display.path_color + display.path_char + '\033[0m'
                 cr += 2
             elif move == 'E':
-                data.grid[cr][cc + 1] = data.path_color + data.path_char + '\033[0m'
+                state.grid[cr][cc + 1] = display.path_color + display.path_char + '\033[0m'
                 cc += 2
             elif move == 'W':
-                data.grid[cr][cc - 1] = data.path_color + data.path_char + '\033[0m'
+                state.grid[cr][cc - 1] = display.path_color + display.path_char + '\033[0m'
                 cc -= 2
             else:
                 print("Error: Invalid path")
                 exit(1)
-    grid_print(data=data)
+    grid_print(state=state, config=config)
     maze_controle()
 
 
@@ -352,14 +393,12 @@ def handel_exit(is_welcom: bool = False) -> None:
             if is_welcom:
                 welcom()
                 break
-            
 
-
-def redraw(data: AllData) -> None:
-    if data.path:
-        print_path(data=data)
+def redraw(state: MazeState, config: Config, display: DisplayConfig) -> None:
+    if display.path:
+        print_path(state=state, config=config, display=display)
     else:
-        print_maze(data=data)
+        print_maze(state=state, config=config, display=display)
 
 
 def maze_controle() -> None:
@@ -377,68 +416,71 @@ def maze_controle() -> None:
 
 
 def main() -> None:
-    data: AllData = AllData()
-
-    def _check_terminal(is_welcom: bool = False) -> Tuple[int, int]:
+    config: Config
+    state: MazeState
+    display = DisplayConfig()
+    old_col: int = 0
+    old_rows: int = 0
+    def _check_terminal(is_welcom: bool = False) -> None:
+        nonlocal old_col, old_rows
         new_col, new_rows = os.get_terminal_size()
-        if (data.old_col, data.old_rows) != (new_col, new_rows):
+        if (old_col, old_rows) != (new_col, new_rows):
             if is_welcom:
                 welcom()
-                return (new_col, new_rows)
-            redraw(data=data)
-        return (new_col, new_rows)
+            else:
+                nonlocal state, config, display
+                redraw(state=state, config=config, display=display)
+        old_col = new_col
+        old_rows = new_rows
 
     if len(sys.argv) == 1:
         print("Error: The program must be run with the following command:\n"
               "python3 a_maze_ing.py [config_file_here]")
         exit(1)
-    welcom()
     while True:
         char: str = get_char()
-        data.old_col, data.old_rows = _check_terminal(True)
+        _check_terminal(True)
         if char in ['S', 's']:
             os.system("clear")
-            parse_config(data=data)
-            data.regenerate()
-            write_output(data=data)
-            print_maze(data=data)
+            config = parse_config()
+            state = MazeState(config=config)
+            state.regenerate()
+            write_output(state=state, config=config)
+            print_maze(state=state, config=config, display=display)
             while True:
                 char = get_char()
-                data.old_col, data.old_rows = _check_terminal()
+                _check_terminal()
                 if char in ['R', 'r']:
-                    parse_config(data=data)
-                    data.regenerate()
-                    print_maze(data=data)
-                    data.path = False
+                    config = parse_config()
+                    state = MazeState(config=config)
+                    state.regenerate()
+                    print_maze(state=state, config=config, display=display)
+                    display.path = False
                 elif char in ['P', 'p']:
-                    if not data.path:
-                        print_path(data=data)
-                        data.path = True
+                    if not display.path:
+                        print_path(state=state, config=config, display=display)
+                        display.path = True
                     else:
-                        print_maze(data=data)
-                        data.path = False
+                        print_maze(state=state, config=config, display=display)
+                        display.path = False
                 elif char == '1':
-                    data.w += 1
-                    data.wall_color = data.colorado[(data.w + 1) % len(data.colorado)]
-                    print_maze(data=data)
-                    if data.path:
-                        print_path(data=data)
+                    display.new_wall_colol()
+                    print_maze(state=state, config=config, display=display)
+                    if display.path:
+                        print_path(state=state, config=config, display=display)
                 elif char == '2':
-                    data.p += 1
-                    data.path_color = data.colorado[(data.p + 1) % len(data.colorado)]
-                    if data.path:
-                        print_path(data=data)
+                    display.new_path_colol()
+                    if display.path:
+                        print_path(state=state, config=config, display=display)
                 elif char == '3':
-                    data.wc += 1
-                    data.wall_char = data.emoji[(data.wc + 1) % len(data.emoji)]
-                    print_maze(data=data)
-                    if data.path:
-                        print_path(data=data)
+                    display.new_wall_char()
+                    print_maze(state=state, config=config, display=display)
+                    if display.path:
+                        print_path(state=state, config=config, display=display)
                 elif char == '4':
-                    data.pc += 1
-                    data.path_char = data.emoji2[(data.pc + 1) % len(data.emoji2)]
-                    if data.path:
-                        print_path(data=data)
+                    display.new_path_char()
+                    if display.path:
+                        print_path(state=state, config=config, display=display)
                 elif char in ['Q', 'q']:
                     middel_print("Do u want really to " +
                                  '\033[31m' + "EXIT" + '\033[0m' +
@@ -449,10 +491,10 @@ def main() -> None:
                         if char in ['Y', 'y']:
                             exit_code()
                         elif char in ['N', 'n']:
-                            if data.path:
-                                print_path(data=data)
+                            if display.path:
+                                print_path(state=state, config=config, display=display)
                             else:
-                                print_maze(data=data)
+                                print_maze(state=state, config=config, display=display)
                             break
         elif char in ['Q', 'q']:
             handel_exit(True)
@@ -481,3 +523,4 @@ if __name__ == '__main__':
     except (KeyboardInterrupt, EOFError):
         os.system('clear')
         middel_print("KeyboardInterrupt")
+
