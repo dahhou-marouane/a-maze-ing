@@ -18,7 +18,7 @@ def parse_config() -> Config:
             os.system("clear")
             print(
                 "Error config file: OUTPUT_FILE"
-                " must be in the " "script directory")
+                " must be in the script directory")
             exit(1)
 
     config: Dict[str, str] = {}

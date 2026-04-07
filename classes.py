@@ -1,20 +1,28 @@
 import os
-from dataclasses import dataclass
 from typing import List, Tuple, Dict
 from mazegen import MazeGenerator
 
 
-@dataclass
 class Config:
-    """Immutable maze settings parsed from the config file."""
+    """maze settings parsed from the config file."""
 
-    width: int
-    height: int
-    entry: Tuple[int, int]
-    exit_pos: Tuple[int, int]
-    perfect: bool
-    seed: str | None
-    output_file: str
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: Tuple[int, int],
+        exit_pos: Tuple[int, int],
+        perfect: bool,
+        seed: str | None,
+        output_file: str
+    ):
+        self.width = width
+        self.height = height
+        self.entry = entry
+        self.exit_pos = exit_pos
+        self.perfect = perfect
+        self.seed = seed
+        self.output_file = output_file
 
 
 class DisplayConfig:
