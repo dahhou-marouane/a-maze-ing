@@ -11,7 +11,7 @@ debug:
 	@python3 -m pdb a_maze_ing.py $(CONFIG)
 
 clean:
-	@rm -rf mypy_cache __pycache__ mazegen/__pycache__
+	@rm -rf .mypy_cache __pycache__ mazegen/__pycache__
 
 lint: install
 	flake8 .

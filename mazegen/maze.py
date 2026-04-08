@@ -183,7 +183,7 @@ class MazeGenerator:
             else:
                 stack.pop()
 
-    def is_valid_tobreak(self, row: int, col: int) -> bool:
+    def _is_valid_tobreak(self, row: int, col: int) -> bool:
         """Check if cell has fewer than 3 open walls.
 
         Args:
@@ -238,9 +238,9 @@ class MazeGenerator:
                 continue
             if self._maze[row][col][direction] is False:
                 continue
-            if not self.is_valid_tobreak(row, col):
+            if not self._is_valid_tobreak(row, col):
                 continue
-            if not self.is_valid_tobreak(next_row, next_col):
+            if not self._is_valid_tobreak(next_row, next_col):
                 continue
             self._open_walls(row, col, direction)
             visited[row][col] = True
