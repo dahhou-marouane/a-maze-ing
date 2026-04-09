@@ -5,3 +5,5 @@ dist/
 __pycache__/
 .mypy_cache/
 *.pyc
+mazegen.egg-info
+maze.txt
