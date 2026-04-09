@@ -1,7 +1,7 @@
 # Default A-Maze-ing configuration
-width=100
-HEIGHT=100
+width=20
+HEIGHT=20
 ENTRY=0,0
-EXIT=9,9
+EXIT=19,19
 OUTPUT_FILE = maze.txt
 PERFECT=fAlsE

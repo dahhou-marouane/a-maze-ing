@@ -11,7 +11,7 @@ def parse_config() -> Config:
     def _check_output_file(file: str) -> None:
         if not file:
             print("Error config file: OUTPUT_FILE cannot be ''")
-            exit(1)
+            sys.exit(1)
         allowed_dir = os.path.dirname(os.path.realpath(__file__))
         output_path = os.path.realpath(os.path.join(allowed_dir, file))
         if os.path.dirname(output_path) != allowed_dir:
@@ -19,7 +19,7 @@ def parse_config() -> Config:
             print(
                 "Error config file: OUTPUT_FILE"
                 " must be in the script directory")
-            exit(1)
+            sys.exit(1)
 
     config: Dict[str, str] = {}
     keys: List[str] = [
@@ -47,17 +47,17 @@ def parse_config() -> Config:
         ValueError
     ) as e:
         print("Error:", e)
-        exit(1)
+        sys.exit(1)
     for key, _ in config.items():
         if key not in keys:
             if key == "SEED":
                 continue
             print(f"Error config file: Unknown key [{key}] in config file")
-            exit(1)
+            sys.exit(1)
     for ky in keys:
         if ky not in config:
             print(f"Error: missing key [{ky}] in config file")
-            exit(1)
+            sys.exit(1)
     try:
         try:
             width: int = int(config["WIDTH"])
@@ -93,28 +93,29 @@ def parse_config() -> Config:
             raise ValueError("SEED must have a value")
         else:
             seed = config["SEED"]
-        perfect: str | bool = config["PERFECT"].strip().lower()
-        if perfect in ("true", "1"):
+        perfect_str: str = config["PERFECT"].strip().lower()
+        perfect: bool
+        if perfect_str in ("true", "1"):
             perfect = True
-        elif perfect in ("false", "0"):
+        elif perfect_str in ("false", "0"):
             perfect = False
         else:
             raise ValueError("Invalid boolean value of perfect maze")
     except ValueError as e:
         print(f"Error config file: {e}")
-        exit(1)
+        sys.exit(1)
     if width <= 0 or height <= 0:
         print("WIDTH and HEIGHT must be positive integers > 0")
-        exit(1)
+        sys.exit(1)
     if not (0 <= entry_pos[0] < width and 0 <= entry_pos[1] < height):
         print("Error: ENTRY is outside the maze walls")
-        exit(1)
+        sys.exit(1)
     if not (0 <= exit_pos[0] < width and 0 <= exit_pos[1] < height):
         print("Error: EXIT is outside the maze walls")
-        exit(1)
+        sys.exit(1)
     if entry_pos == exit_pos:
         print("Error: ENTRY and EXIT must be different")
-        exit(1)
+        sys.exit(1)
     _check_output_file(config["OUTPUT_FILE"])
     return Config(
         width=width,

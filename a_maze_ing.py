@@ -20,7 +20,7 @@ def grid_print(state: MazeState, config: Config) -> None:
     cols, rows = os.get_terminal_size()
     if cols < (config.width * 2 + 1) * 2 + 1 or rows < config.height * 2 + 12:
         os.system("clear")
-        middel_print("Terminal is small to print the maze")
+        middle_print("Terminal is small to print the maze")
         return
     spaces: int = (cols - (config.width * 2 + 1) * 2) // 2
     new_lines: int = (rows - (config.height * 2 + 1)) // 2
@@ -32,7 +32,7 @@ def grid_print(state: MazeState, config: Config) -> None:
             print(i, end="")
         print()
     if config.height < 9 or config.width < 9:
-        middel_print("The maze is small to add the 42_stamp")
+        middle_print("The maze is small to add the 42_stamp")
 
 
 def print_maze(
@@ -101,13 +101,13 @@ def print_maze(
                 state.grid[cr][cc + 1] = "  "
             if not cell["W"]:
                 state.grid[cr][cc - 1] = "  "
-    if config.height > 8 or config.width > 8:
+    if config.height > 8 and config.width > 8:
         for r, c in stamp:
             state.grid[(r + start_row) * 2 + 1][(c + start_col) * 2 + 1] = (
                 display.wall_color + display.wall_char + "\033[0m"
             )
     grid_print(state=state, config=config)
-    maze_controle()
+    maze_control()
 
 
 def print_path(
@@ -156,16 +156,16 @@ def print_path(
                 cc -= 2
             else:
                 print("Error: Invalid path")
-                exit(1)
+                sys.exit(1)
     grid_print(state=state, config=config)
-    maze_controle()
+    maze_control()
 
 
-def welcom() -> None:
+def welcome() -> None:
     """Prints the animated welcome screen,
     blocking until the terminal is large enough."""
 
-    welcom_msg: List[str] = [
+    welcome_msg: List[str] = [
         " " * 24
         + "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗██"
         + "█████╗",
@@ -209,14 +209,15 @@ def welcom() -> None:
     new_lines: int = (rows - 20) // 2
     if cols < 117 or rows < 24:
         os.system("clear")
-        middel_print("Terminal is too small make it bigger")
+        middle_print("Terminal is too small make it bigger")
         while True:
             cols, rows = os.get_terminal_size()
+            time.sleep(0.1)
             if cols >= 117 and rows >= 24:
                 break
     os.system("clear")
     print("\n" * new_lines)
-    for msg in welcom_msg:
+    for msg in welcome_msg:
         print("\033[31m" + "\033[5m" + " " * spaces + msg + "\033[0m")
     print(
         "\033[92m"
@@ -261,10 +262,10 @@ def exit_code() -> None:
             os.system("clear")
 
     _good_bye()
-    exit(0)
+    sys.exit(0)
 
 
-def middel_print(message: str) -> None:
+def middle_print(message: str) -> None:
     """Prints a message centred horizontally in the terminal.
 
     Args:
@@ -276,8 +277,8 @@ def middel_print(message: str) -> None:
     print((" " * spaces) + message + "\033[0m")
 
 
-def handel_exit(
-    is_welcom: bool = False,
+def handle_exit(
+    is_welcome: bool = False,
     state: MazeState | None = None,
     config: Config | None = None,
     display: DisplayConfig | None = None,
@@ -286,14 +287,14 @@ def handel_exit(
     returning to welcome or maze screen if declined.
 
     Args:
-        is_welcom: If True, redraws the welcome screen on 'N'.
+        is_welcome: If True, redraws the welcome screen on 'N'.
         Defaults to False.
-        state: Current maze state, required if is_welcom is False.
-        config: Current maze config, required if is_welcom is False.
-        display: Current display settings, required if is_welcom is False.
+        state: Current maze state, required if is_welcome is False.
+        config: Current maze config, required if is_welcome is False.
+        display: Current display settings, required if is_welcome is False.
     """
 
-    middel_print(
+    middle_print(
         "Do u want really to "
         + "\033[31m" + "EXIT" + "\033[0m" + ": (Y)es, (N)o"
     )
@@ -302,8 +303,8 @@ def handel_exit(
         if char in ["Y", "y"]:
             exit_code()
         elif char in ["N", "n"]:
-            if is_welcom:
-                welcom()
+            if is_welcome:
+                welcome()
                 break
             elif (
                 state is not None
@@ -329,7 +330,7 @@ def redraw(state: MazeState, config: Config, display: DisplayConfig) -> None:
         print_maze(state=state, config=config, display=display)
 
 
-def maze_controle() -> None:
+def maze_control() -> None:
     """Prints the keybinding controls menu below the maze."""
 
     print("\n" * 3)
@@ -345,25 +346,28 @@ def maze_controle() -> None:
         "(4) to change path CHARACTERS  ",
     ]
     for i in msg:
-        middel_print(i)
+        middle_print(i)
 
 
 def main() -> None:
     """Entry point — initialises state, runs the welcome loop, and handles all
     user input."""
 
+    if not sys.stdin.isatty():
+        print("Error: this program requires an interactive terminal.")
+        sys.exit(1)
     config: Config
     state: MazeState
     display = DisplayConfig()
     old_col: int = 0
     old_rows: int = 0
 
-    def _check_terminal(is_welcom: bool = False) -> None:
+    def _check_terminal(is_welcome: bool = False) -> None:
         nonlocal old_col, old_rows
         new_col, new_rows = os.get_terminal_size()
         if (old_col, old_rows) != (new_col, new_rows):
-            if is_welcom:
-                welcom()
+            if is_welcome:
+                welcome()
             else:
                 redraw(state=state, config=config, display=display)
         old_col = new_col
@@ -374,7 +378,7 @@ def main() -> None:
             "Error: The program must be run with the following command:\n"
             "python3 a_maze_ing.py [config_file_here]"
         )
-        exit(1)
+        sys.exit(1)
     while True:
         char: str = get_char()
         _check_terminal(True)
@@ -419,14 +423,14 @@ def main() -> None:
                     if display.path:
                         print_path(state=state, config=config, display=display)
                 elif char in ["Q", "q"]:
-                    handel_exit(
-                        is_welcom=False,
+                    handle_exit(
+                        is_welcome=False,
                         state=state,
                         config=config,
                         display=display
                     )
         elif char in ["Q", "q"]:
-            handel_exit(is_welcom=True)
+            handle_exit(is_welcome=True)
 
 
 def get_char() -> str:
@@ -457,4 +461,6 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         os.system("clear")
-        middel_print("KeyboardInterrupt")
+        middle_print("KeyboardInterrupt")
+    except Exception as e:
+        middle_print(f"unexpected error: {e}")

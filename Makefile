@@ -13,6 +13,9 @@ debug:
 clean:
 	@rm -rf .mypy_cache __pycache__ mazegen/__pycache__
 
+clean-deep:
+	@rm -rf .mypy_cache __pycache__ mazegen/__pycache__ dist mazegen.egg-info maze.txt
+
 lint: install
 	flake8 .
 	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
@@ -21,4 +24,4 @@ lint-strict: install
 	python3 -m flake8 .
 	python3 -m mypy . --strict
 
-.PHONY: install run debug clean
+.PHONY: install run debug clean clean-deep lint lint-strict

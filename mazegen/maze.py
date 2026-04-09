@@ -19,7 +19,7 @@ class MazeGenerator:
     On grids ≥(9,9), embeds a "42" pixel-art that DFS carves around.
 
     Example usage:
-        from mazegen.generator import MazeGenerator
+        from mazegen import MazeGenerator
 
         gen = MazeGenerator(
             width=20,
@@ -73,10 +73,11 @@ class MazeGenerator:
         """Builds the maze and computes its solution.
 
         Initialises the grid, runs DFS, optionally breaks extra
-        walls if imprefect maze, then stores the BFS shortest
+        walls if imperfect maze, then stores the BFS shortest
         path in ``_solution``.
         """
         random.seed(self._seed)
+        self._stamp = []
         self._maze = self._create_maze()
         self._dfs_algo()
         if not self._perfect:
@@ -113,7 +114,7 @@ class MazeGenerator:
         self._maze[next_row][next_col][OPPOSITE[direction]] = False
 
     def _dfs_algo(self) -> None:
-        """Carves passages using an iterative randomised DFS from (0, 0).
+        """Carves passages using an iterative randomised DFS from entry cell.
 
         Pre-marks "42" cells as visited on grids so DFS carves around them,
         leaving their walls intact.
@@ -160,8 +161,8 @@ class MazeGenerator:
                 visited[r + start_row][c + start_col] = True
                 self._stamp.append((r + start_row, c + start_col))
 
-        stack: List[Tuple[int, int]] = [(0, 0)]
-        visited[0][0] = True
+        stack: List[Tuple[int, int]] = [(self._entry[1], self._entry[0])]
+        visited[self._entry[1]][self._entry[0]] = True
         while stack:
             row, col = stack[-1]
             neigbors: List[Tuple[int, int, str]] = []
@@ -212,12 +213,16 @@ class MazeGenerator:
         Skips stamp cells, already-open walls, and cells that have already
         had a wall broken in this pass.
         """
+
         wallstobreak: int = int((self._width * self._height) * 0.15)
         breaked: int = 0
         visited: List[List[bool]] = [
             [False] * self._width for _ in range(self._height)
         ]
-        while breaked < wallstobreak:
+        max_attempts: int = wallstobreak * 100
+        attempts: int = 0
+        while breaked < wallstobreak and attempts < max_attempts:
+            attempts += 1
             row: int = random.randint(0, self._height - 1)
             col: int = random.randint(0, self._width - 1)
             direction: str = random.choice(["N", "E", "S", "W"])
@@ -244,6 +249,7 @@ class MazeGenerator:
                 continue
             self._open_walls(row, col, direction)
             visited[row][col] = True
+            visited[next_row][next_col] = True
             breaked += 1
 
     def _find_path(self) -> str:

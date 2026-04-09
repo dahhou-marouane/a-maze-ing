@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List, Tuple, Dict
 from mazegen import MazeGenerator
 
@@ -16,6 +17,18 @@ class Config:
         seed: str | None,
         output_file: str
     ):
+        """Initialises maze configuration from validated parsed values.
+
+        Args:
+            width: Number of columns in the maze grid.
+            height: Number of rows in the maze grid.
+            entry: Entry cell coordinates as (x, y).
+            exit_pos: Exit cell coordinates as (x, y).
+            perfect: If True, the maze has exactly one path
+                            between any two cells.
+            seed: RNG seed for reproducible generation, or None for random.
+            output_file: Path to the file where the hex maze output is written.
+        """
         self.width = width
         self.height = height
         self.entry = entry
@@ -40,17 +53,21 @@ class DisplayConfig:
     ]
     _emoji: List[str] = ["██", "42", "$$", "@@", "##", "**", "&&", "MM", "00"]
     _emoji2: List[str] = ["▓▓", "13", "%%", "++", "NN"]
-    wall_char: str = _emoji[0]
-    path_char: str = _emoji2[0]
-    wall_color: str = ""
-    path_color: str = ""
-    _w: int = -1
-    _wc: int = -1
-    _p: int = -1
-    _pc: int = -1
-    path: bool = False
-    old_col: int = 0
-    old_rows: int = 0
+
+    def __init__(self) -> None:
+        """Initialises display state with defaults."""
+
+        self.wall_char: str = self._emoji[0]
+        self.path_char: str = self._emoji2[0]
+        self.wall_color: str = ""
+        self.path_color: str = ""
+        self._w: int = -1
+        self._wc: int = -1
+        self._p: int = -1
+        self._pc: int = -1
+        self.path: bool = False
+        self.old_col: int = 0
+        self.old_rows: int = 0
 
     def new_wall_color(self) -> None:
         """Cycles to the next wall color."""
@@ -108,7 +125,7 @@ class MazeState:
         except ValueError as e:
             os.system("clear")
             print("ERROR:", e)
-            exit(1)
+            sys.exit(1)
         self.maze = gen.maze()
         self.solution = gen.solution()
         write_output(self, self.config)
@@ -127,11 +144,11 @@ def write_output(state: MazeState, config: Config) -> None:
         with open(config.output_file, "w") as f:
             for row in range(config.height):
                 for col in range(config.width):
-                    sum: int = 0
+                    summ: int = 0
                     for direction, wall in wall_direction.items():
                         if state.maze[row][col][direction]:
-                            sum += wall
-                    f.write(hex(sum)[2:].upper())
+                            summ += wall
+                    f.write(hex(summ)[2:].upper())
                 f.write("\n")
             f.write("\n")
             f.write(f"{config.entry[0]},{config.entry[1]}\n")
@@ -140,4 +157,4 @@ def write_output(state: MazeState, config: Config) -> None:
     except (PermissionError, IsADirectoryError) as e:
         os.system("clear")
         print(f"ERROR output_file: {e.__class__.__name__}")
-        exit(1)
+        sys.exit(1)

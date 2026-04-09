@@ -60,7 +60,7 @@ The config file uses one `KEY=VALUE` pair per line. Lines starting with `#` are 
 | `ENTRY`       | Entry cell coordinates `(x,y)`           | `ENTRY=0,0`               |
 | `EXIT`        | Exit cell coordinates `(x,y)`            | `EXIT=19,19`              |
 | `OUTPUT_FILE` | Output filename (must be in script dir)  | `OUTPUT_FILE=maze.txt`    |
-| `PREFECT`     | Perfect maze? (`True`/`False`)           | `PREFECT=True`            |
+| `PERFECT`     | Perfect maze? (`True`/`False`)           | `PERFECT=True`            |
 | `SEED`        | Optional RNG seed for reproducibility    | `SEED=42`                 |
 
 **Example `config.txt`:**
@@ -72,7 +72,7 @@ HEIGHT=20
 ENTRY=0,0
 EXIT=19,19
 OUTPUT_FILE=maze.txt
-PREFECT=True
+PERFECT=True
 SEED=42
 ```
 
@@ -106,7 +106,7 @@ This project uses **Iterative Depth-First Search (DFS)** with a randomised neigh
 - Natively generates perfect mazes (one path between any two cells) as a spanning tree
 - Simple and efficient to implement iteratively using a stack
 
-For imperfect mazes (`PREFECT=False`), approximately 15% of additional walls are broken at random after DFS, introducing loops and multiple routes.
+For imperfect mazes (`PERFECT=False`), approximately 15% of additional walls are broken at random after DFS, introducing loops and multiple routes.
 
 ---
 
@@ -133,14 +133,13 @@ path = gen.solution()  # str — e.g. 'SSEENNE...'
 ```
 
 ### Custom parameters
-
 ```python
 gen = MazeGenerator(
     width=30,
     height=30,
     entry=(0, 0),
     exit=(29, 29),
-    prefect=False,   # allow loops
+    perfect=False,   # allow loops
     seed="hello42"   # reproducible output
 )
 gen.generate()
