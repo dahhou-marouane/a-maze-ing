@@ -1,25 +1,27 @@
 CONFIG = config.txt
 
 install:
-	pip install -r requirements.txt
+	@python3 -m pip install --upgrade pip
+	@pip install -r requirements.txt
 
 run:
 	@python3 a_maze_ing.py $(CONFIG)
 
 debug:
-	python3 -m pdb a_maze_ing.py $(CONFIG)
+	@python3 -m pdb a_maze_ing.py $(CONFIG)
 
 clean:
-	find . -type d -name __pycache__ -exec rm -rf __pycache__
-	find . -type d -name .mypy_cache -exec rm -rf {} +
-	find . -name "*.pyc" -delete
+	@rm -rf .mypy_cache __pycache__ mazegen/__pycache__
 
-lint:
+clean-deep:
+	@rm -rf .mypy_cache __pycache__ mazegen/__pycache__ dist mazegen.egg-info maze.txt
+
+lint: install
 	flake8 .
 	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
-lint-strict:
-	flake8 .
-	mypy . --strict
+lint-strict: install
+	python3 -m flake8 .
+	python3 -m mypy . --strict
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: install run debug clean clean-deep lint lint-strict
